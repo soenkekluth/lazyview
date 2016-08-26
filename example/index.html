@@ -6,33 +6,38 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
   <title>LazyView Demo</title>
-
   <style>
-    .page {
-      position: relative;
-    }
-    .lazyview{
-      width: 100%;
-      height: 50px;
-      background-color: red;
+  .page {
+    position: relative;
+  }
 
-    }
-    .lazyview.lazyview-ative {
-      background-color: grey;
-      transition: background-color 1000ms ease-out;
-    }
-    .test{
-      width: 100%;
-      height: 50px;
-      background-color: blue;
-      margin-top: 10px;
-    }
+  .lazyview.hugh {
+    position: absolute;
+    background-color: green;
+    top: 600px;
+  }
+
+  .lazyview {
+    width: 100%;
+    height: 50px;
+    background-color: red;
+    transition: background-color 1000ms ease-out;
+  }
+
+  .lazyview.lazyview-active {
+    background-color: grey;
+  }
+
+  .test {
+    width: 100%;
+    height: 50px;
+    background-color: blue;
+    margin-top: 10px;
+  }
   </style>
-
 </head>
 
 <body>
-
   <div class="page">
     <div class="test"></div>
     <div class="test"></div>
@@ -68,6 +73,7 @@
     <div class="test"></div>
     <div class="test"></div>
     <div class="test"></div>
+    <div class="lazyview hugh"> </div>
     <div class="test"></div>
     <div class="test"></div>
     <div class="test"></div>
@@ -87,16 +93,16 @@
     <div class="test"></div>
     <div class="test"></div>
     <div class="test"></div>
-
-
   </div>
-
-
-
   <script src="../dist/lazyview.js"></script>
-
   <script>
-    new LazyView(document.querySelector('.lazyview'),{addClass:true})
+  LazyView.apply(document.querySelectorAll('.lazyview'), {
+      addClass: true
+    })
+    .forEach(lazy => {
+      lazy.on(LazyView.IN, event => console.log(event.target, 'is in'));
+      lazy.on(LazyView.OUT, event => console.log(event.target, 'is out'));
+    })
   </script>
 </body>
 

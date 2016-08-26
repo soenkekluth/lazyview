@@ -13,17 +13,36 @@ const getAbsolutBoundingRect = (el, fixedHeight) => {
     top: top,
     bottom: top + height,
     height: height,
-    width: rect.width,
+    width: rect.width
   };
 };
 
 const defaults = {
-  className:  'lazyview-ative',
-  addClass: false
-
+  className:  'lazyview-active',
+  addClass: false,
+  threshold : 0,
+  callback : null
 };
 
 export default class LazyView {
+
+
+  static IN = 'lazyview:in';
+  static OUT = 'lazyview:out';
+
+  static apply = (elements, options) => {
+    if (elements) {
+      if (elements.length) {
+        const arr = [];
+        for (var i = 0; i < elements.length; i++) {
+          arr.push(new LazyView(elements[i], options));
+        }
+        return arr;
+      } else {
+        return new LazyView(elements, options);
+      }
+    }
+  };
 
   constructor(el, options) {
     this.options = assign({}, defaults, options);
@@ -31,6 +50,7 @@ export default class LazyView {
     this.state = {
       inView: false
     };
+
     domready(() => {
       this.init();
     });
@@ -64,13 +84,15 @@ export default class LazyView {
 
   checkInView() {
     const attr = this.fastScroll.attr();
-    if (attr.scrollY >= this.position.top - this.windowHeight && attr.scrollY <= this.position.bottom) {
+    if (attr.scrollY >= (this.position.top - this.windowHeight + this.options.threshold) && (attr.scrollY <= this.position.bottom - this.options.threshold)) {
       if (!this.state.inView) {
         this.setState({ inView: true });
+        this.dispatch(LazyView.IN);
       }
     } else {
       if (this.state.inView) {
         this.setState({ inView: false });
+        this.dispatch(LazyView.OUT);
       }
     }
   }
@@ -97,4 +119,16 @@ export default class LazyView {
     this.checkInView();
   }
 
+
+  dispatch(event){
+    return this.el.dispatchEvent(new Event(event));
+  }
+
+  on (event, listener) {
+    return this.el.addEventListener(event, listener, false);
+  }
+
+  off (event, listener) {
+    return this.el.removeEventListener(event, listener);
+  }
 }
