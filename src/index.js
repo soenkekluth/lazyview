@@ -83,8 +83,8 @@ export default class LazyView {
   }
 
   checkInView() {
-    const attr = this.fastScroll.attr();
-    if (attr.scrollY >= (this.position.top - this.windowHeight + this.options.threshold) && (attr.scrollY <= this.position.bottom - this.options.threshold)) {
+    const scrollY = this.fastScroll.attr().scrollY;
+    if (scrollY >= (this.position.top - this.windowHeight + this.options.threshold) && (scrollY <= this.position.bottom - this.options.threshold)) {
       if (!this.state.inView) {
         this.setState({ inView: true });
         this.dispatch(LazyView.IN);
