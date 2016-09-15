@@ -1,17 +1,16 @@
 {
   "name": "lazyview",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Initialize a View Component related to a dom element when it enters the viewport. Or Lazyload images for example",
   "main": "dist/lazyview.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build-js": "browserify --fast -e src/index.js -d --standalone LazyView -t babelify | derequire | exorcist dist/lazyview.js.map > dist/lazyview.js",
-    "dist-js": "BABEL_ENV=production browserify -e src/index.js --standalone LazyView -t babelify | derequire > dist/lazyview.js",
-    "dist-js-min": "uglifyjs -cmv dist/lazyview.js > dist/lazyview.min.js",
-    "dist": "npm run dist-js && npm run dist-js-min",
-    "start": "run-p watch-js server",
-    "watch-js": "watchify -d --poll=100 --fast --standalone LazyView -e src/index.js -t babelify -o 'exorcist dist/lazyview.js.map > dist/lazyview.js' -v",
-    "server": "browser-sync start --no-ghost-mode --server --directory --files 'example/**/**, dist/*.js' --startPath example/index.html"
+    "watch-js": "NODE_ENV=development webpack -wd",
+    "build": "NODE_ENV=production webpack -p",
+    "dist": "npm run build && npm run build-lib",
+    "start": "run-p watch-js devserver",
+    "build-lib": "BABEL_ENV=production babel src -d dist",
+    "devserver": "webpack-dev-server --config ./webpack.config.js --inline --open"
   },
   "repository": {
     "type": "git",
@@ -32,6 +31,7 @@
   "devDependencies": {
     "babel-cli": "6.14.0",
     "babel-core": "6.14.0",
+    "babel-loader": "6.2.5",
     "babel-plugin-add-module-exports": "0.2.1",
     "babel-plugin-transform-class-constructor-call": "6.8.0",
     "babel-plugin-transform-class-properties": "6.11.5",
@@ -41,19 +41,17 @@
     "babel-plugin-transform-remove-console": "6.8.0",
     "babel-preset-es2015": "6.14.0",
     "babel-preset-stage-0": "6.5.0",
-    "babelify": "7.3.0",
-    "browser-sync": "2.14.0",
-    "browserify": "13.1.0",
-    "concurrently": "2.2.0",
-    "derequire": "2.0.3",
-    "domready": "1.0.8",
-    "exorcist": "0.4.0",
-    "fastscroll": "2.0.0",
     "mocha": "3.0.2",
-    "npm-run-all": "3.0.0",
-    "object-assign": "4.1.0",
+    "npm-run-all": "3.1.0",
     "should": "11.1.0",
-    "uglify-js": "2.7.3",
-    "watchify": "3.7.0"
+    "webpack": "1.13.2",
+    "webpack-dev-server": "1.15.2"
+  },
+  "dependencies": {
+    "object-assign": "4.1.0",
+    "delegatejs": "1.1.0",
+    "domready": "1.0.8",
+    "eventdispatcher": "1.6.0",
+    "scroll-events": "1.1.2"
   }
 }
