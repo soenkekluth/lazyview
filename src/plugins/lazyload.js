@@ -2,6 +2,8 @@ import LazyViewPlugin from '../lazyview.plugin';
 
 module.exports = options => {
 
+  options = options || {};
+
   return new LazyViewPlugin(lazyView => {
 
     var el = lazyView.el;
@@ -13,6 +15,12 @@ module.exports = options => {
         lazyView.scroll.trigger('scroll:resize');
         // lazyView.destroy();
       }, 100);
+      if(options.loadClass){
+        el.classList.remove(options.loadClass);
+      }
+      if(options.completeClass) {
+        el.classList.add(options.completeClass);
+      }
       el.removeEventListener('load', dispatchLoad);
     };
 
@@ -31,6 +39,10 @@ module.exports = options => {
 
       if (isChanged) {
         el.addEventListener('load', dispatchLoad);
+
+        if(options.loadClass){
+          el.classList.add(options.loadClass);
+        }
 
         el.removeAttribute('data-src');
         el.removeAttribute('data-srcset');

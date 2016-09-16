@@ -8,6 +8,8 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 module.exports = function (options) {
 
+  options = options || {};
+
   return new _lazyview2.default(function (lazyView) {
 
     var el = lazyView.el;
@@ -19,6 +21,12 @@ module.exports = function (options) {
         lazyView.scroll.trigger('scroll:resize');
         // lazyView.destroy();
       }, 100);
+      if (options.loadClass) {
+        el.classList.remove(options.loadClass);
+      }
+      if (options.completeClass) {
+        el.classList.add(options.completeClass);
+      }
       el.removeEventListener('load', _dispatchLoad);
     };
 
@@ -37,6 +45,10 @@ module.exports = function (options) {
 
       if (isChanged) {
         el.addEventListener('load', _dispatchLoad);
+
+        if (options.loadClass) {
+          el.classList.add(options.loadClass);
+        }
 
         el.removeAttribute('data-src');
         el.removeAttribute('data-srcset');
