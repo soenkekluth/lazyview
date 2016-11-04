@@ -1,7 +1,6 @@
 import EventDispatcher from 'eventdispatcher';
 import Scroll from 'scroll-events';
 import domready from 'domready';
-import delegate from 'delegatejs';
 import LazyViewPlugin from './lazyview.plugin';
 import assign from 'object-assign';
 
@@ -11,7 +10,6 @@ const isLazyViewPlugin = obj => obj && obj.hasOwnProperty('creator');
 
 const defaults = {
   enterClass: '',
-  exitClass: '',
   threshold: 0
 };
 
@@ -54,7 +52,7 @@ export default class LazyView extends EventDispatcher {
 
   constructor(...args) {
 
-    if (args.length < 1) {
+    if (!args.length) {
       throw 'non initialization object';
     }
 
@@ -110,8 +108,8 @@ export default class LazyView extends EventDispatcher {
       inView: false
     }, true);
 
-    this.onScroll = delegate(this, this.checkInView);
-    this.onResize = delegate(this, this.update);
+    this.onScroll = this.checkInView.bind(this);
+    this.onResize = this.update.bind(this);
 
     domready(() => this.init());
 
@@ -133,22 +131,12 @@ export default class LazyView extends EventDispatcher {
     window.addEventListener('resize', this.onResize, false);
     window.addEventListener('orientationchange', this.onResize, false);
 
-
     this.cachePosition();
 
     var i = -1;
     while (++i < this.plugins.length) {
       this.plugins[i].creator(this);
     }
-
-
-
-    // scrollTarget.addEventListener('load', (event) => {
-    //   setTimeout(() => {
-    //     // this.scroll.trigger('scroll:update');
-    //     // this.update();
-    //   }, 10);
-    // }, false);
 
     this.checkInView();
 
@@ -193,7 +181,7 @@ export default class LazyView extends EventDispatcher {
   }
 
   setState(newState, silent) {
-    this.state = newState;
+    this.state = assign({}, this.state, newState);
     if (silent !== true) {
       this.render();
     }

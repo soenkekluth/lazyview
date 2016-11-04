@@ -18,10 +18,6 @@ var _domready = require('domready');
 
 var _domready2 = _interopRequireDefault(_domready);
 
-var _delegatejs = require('delegatejs');
-
-var _delegatejs2 = _interopRequireDefault(_delegatejs);
-
 var _lazyview = require('./lazyview.plugin');
 
 var _lazyview2 = _interopRequireDefault(_lazyview);
@@ -50,7 +46,6 @@ var isLazyViewPlugin = function isLazyViewPlugin(obj) {
 
 var defaults = {
   enterClass: '',
-  exitClass: '',
   threshold: 0
 };
 
@@ -99,7 +94,7 @@ var LazyView = function (_EventDispatcher) {
       args[_key] = arguments[_key];
     }
 
-    if (args.length < 1) {
+    if (!args.length) {
       throw 'non initialization object';
     }
 
@@ -156,8 +151,8 @@ var LazyView = function (_EventDispatcher) {
       inView: false
     }, true);
 
-    _this.onScroll = (0, _delegatejs2.default)(_this, _this.checkInView);
-    _this.onResize = (0, _delegatejs2.default)(_this, _this.update);
+    _this.onScroll = _this.checkInView.bind(_this);
+    _this.onResize = _this.update.bind(_this);
 
     (0, _domready2.default)(function () {
       return _this.init();
@@ -192,13 +187,6 @@ var LazyView = function (_EventDispatcher) {
       while (++i < this.plugins.length) {
         this.plugins[i].creator(this);
       }
-
-      // scrollTarget.addEventListener('load', (event) => {
-      //   setTimeout(() => {
-      //     // this.scroll.trigger('scroll:update');
-      //     // this.update();
-      //   }, 10);
-      // }, false);
 
       this.checkInView();
     }
@@ -246,7 +234,7 @@ var LazyView = function (_EventDispatcher) {
   }, {
     key: 'setState',
     value: function setState(newState, silent) {
-      this.state = newState;
+      this.state = (0, _objectAssign2.default)({}, this.state, newState);
       if (silent !== true) {
         this.render();
       }
