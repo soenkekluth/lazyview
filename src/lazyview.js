@@ -16,7 +16,7 @@ const defaults = {
 const getAbsolutBoundingRect = (el, fixedHeight) => {
   var rect = el.getBoundingClientRect();
   var height = fixedHeight || rect.height;
-  var top = rect.top + Scroll.windowScrollY +height;
+  var top = rect.top + Scroll.windowScrollY + height;
   return {
     top: top,
     bottom: rect.bottom + Scroll.windowScrollY - height,
@@ -68,17 +68,18 @@ export default class LazyView extends EventDispatcher {
 
     if (args.length === 2) {
 
-      if(typeof args[1] !== 'undefined'){
-      if (isLazyViewPlugin(args[1])) {
-        plugins.push(args[1]);
-      } else if (isArray(args[1])) {
-        plugins.concat(args[1]);
-      } else if (isPlainObject(args[1])) {
-        options = args[1];
-      }}
+      if (typeof args[1] !== 'undefined') {
+        if (isLazyViewPlugin(args[1])) {
+          plugins.push(args[1]);
+        } else if (isArray(args[1])) {
+          plugins.concat(args[1]);
+        } else if (isPlainObject(args[1])) {
+          options = args[1];
+        }
+      }
     } else if (args.length === 3) {
 
-      if(typeof args[1] !== 'undefined'){
+      if (typeof args[1] !== 'undefined') {
         if (isLazyViewPlugin(args[1])) {
           plugins.push(args[1]);
         } else if (isArray(args[1])) {
@@ -87,7 +88,7 @@ export default class LazyView extends EventDispatcher {
           options = args[1];
         }
       }
-      if(typeof args[2] !== 'undefined'){
+      if (typeof args[2] !== 'undefined') {
         if (isLazyViewPlugin(args[2])) {
           plugins.push(args[2]);
         } else if (isArray(args[2])) {
