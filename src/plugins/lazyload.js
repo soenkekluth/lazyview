@@ -15,10 +15,10 @@ module.exports = options => {
         lazyView.scroll.trigger('scroll:resize');
         // lazyView.destroy();
       }, 100);
-      if(options.loadClass){
+      if (options.loadClass) {
         el.classList.remove(options.loadClass);
       }
-      if(options.completeClass) {
+      if (options.completeClass) {
         el.classList.add(options.completeClass);
       }
       el.removeEventListener('load', dispatchLoad);
@@ -40,7 +40,7 @@ module.exports = options => {
       if (isChanged) {
         el.addEventListener('load', dispatchLoad);
 
-        if(options.loadClass){
+        if (options.loadClass) {
           el.classList.add(options.loadClass);
         }
 
