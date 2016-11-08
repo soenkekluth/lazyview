@@ -3,20 +3,27 @@ import Scroll from 'scroll-events';
 import domready from 'domready';
 import LazyViewPlugin from './lazyview.plugin';
 import assign from 'object-assign';
+import deepAssign from 'deep-assign';
 
 const isPlainObject = obj => Object.prototype.toString.call(obj) == '[object Object]';
 const isArray = arr => Object.prototype.toString.call(arr) === '[object Array]';
 const isLazyViewPlugin = obj => obj && obj.hasOwnProperty('creator');
 
+var instanceName = 0;
+
+
 const defaults = {
+  ignoreInitial: false,
   enterClass: '',
-  threshold: 0
+  exitClass: '',
+  threshold: 0,
+  offsets: null // {myoffset:100}
 };
 
 const getAbsolutBoundingRect = (el, fixedHeight) => {
   var rect = el.getBoundingClientRect();
   var height = fixedHeight || rect.height;
-  var top = rect.top + Scroll.windowScrollY +height;
+  var top = rect.top + Scroll.windowScrollY + height;
   return {
     top: top,
     bottom: rect.bottom + Scroll.windowScrollY - height,
@@ -32,17 +39,20 @@ export default class LazyView extends EventDispatcher {
   static ENTER = 'enter';
   static EXIT = 'exit';
 
-  static apply(elements, options, plugins) {
+  static ENTER_OFFSET = 'enter:offset';
+  static EXIT_OFFSET = 'exit:offset';
+
+  static apply(elements, ...rest) {
 
     if (elements && elements.length) {
       var collection = new LazyViewCollection();
       for (var i = 0; i < elements.length; i++) {
-        collection.push(new LazyView(elements[i], options, plugins));
+        collection.push(new LazyView(elements[i], ...rest));
       }
       return collection;
     }
 
-    return new LazyView(elements, options, plugins);
+    return new LazyView(elements, assign({}, options), plugins);
   }
 
 
@@ -59,6 +69,7 @@ export default class LazyView extends EventDispatcher {
     var elements;
     if (args[0] instanceof window.NodeList) {
       elements = [].slice.call(args[0], 1);
+      // return LazyView.apply(elements, args.splice(1,args.length));
       args[0] = args[0][0];
     }
 
@@ -68,17 +79,18 @@ export default class LazyView extends EventDispatcher {
 
     if (args.length === 2) {
 
-      if(typeof args[1] !== 'undefined'){
-      if (isLazyViewPlugin(args[1])) {
-        plugins.push(args[1]);
-      } else if (isArray(args[1])) {
-        plugins.concat(args[1]);
-      } else if (isPlainObject(args[1])) {
-        options = args[1];
-      }}
+      if (typeof args[1] !== 'undefined') {
+        if (isLazyViewPlugin(args[1])) {
+          plugins.push(args[1]);
+        } else if (isArray(args[1])) {
+          plugins.concat(args[1]);
+        } else if (isPlainObject(args[1])) {
+          options = args[1];
+        }
+      }
     } else if (args.length === 3) {
 
-      if(typeof args[1] !== 'undefined'){
+      if (typeof args[1] !== 'undefined') {
         if (isLazyViewPlugin(args[1])) {
           plugins.push(args[1]);
         } else if (isArray(args[1])) {
@@ -87,7 +99,7 @@ export default class LazyView extends EventDispatcher {
           options = args[1];
         }
       }
-      if(typeof args[2] !== 'undefined'){
+      if (typeof args[2] !== 'undefined') {
         if (isLazyViewPlugin(args[2])) {
           plugins.push(args[2]);
         } else if (isArray(args[2])) {
@@ -100,21 +112,25 @@ export default class LazyView extends EventDispatcher {
 
     super({ target: el });
 
+    this.instanceName = (++instanceName);
     this.el = el;
     this.plugins = plugins;
     this.options = assign({}, defaults, options);
+
+
+    this.offsetStates = {};
 
     this.setState({
       inView: false
     }, true);
 
-    this.onScroll = this.checkInView.bind(this);
+    this.onScroll = this.onScroll.bind(this);//this.updateViewState.bind(this);
     this.onResize = this.update.bind(this);
 
     domready(() => this.init());
 
     if (elements && elements.length) {
-      var collection = LazyView.apply(elements, options, plugins);
+      var collection = LazyView.apply(elements, ...args.splice(1,args.length));
       collection.push(this);
       return collection;
     }
@@ -138,40 +154,80 @@ export default class LazyView extends EventDispatcher {
       this.plugins[i].creator(this);
     }
 
-    this.checkInView();
+    this.isInitial = true;
+    this.onScroll();
 
   }
 
   render() {
-    if (this.options.enterClass) {
+    if (this.options.enterClass || this.options.exitClass) {
+      const directionY = this.scroll.directionY;
       if (this.state.inView) {
-        this.el.classList.add(this.options.enterClass);
+        !!this.options.enterClass && (this.el.classList.add(this.options.enterClass, directionY < 1 ? 'view-top' : 'view-bottom'));
+        !!this.options.exitClass && this.el.classList.remove(this.options.exitClass);
       } else {
-        this.el.classList.remove(this.options.enterClass);
+        !!this.options.enterClass && this.el.classList.remove(this.options.enterClass, 'view-top' , 'view-bottom');
+        !!this.options.exitClass && this.el.classList.add(this.options.exitClass, directionY < 1 ? 'view-top' : 'view-bottom');
       }
     }
   }
 
+  onScroll() {
+
+    this.updateViewState();
+
+    if(this.options.offsets){
+      var keys = Object.keys(this.options.offsets);
+      var i = -1;
+      var l = keys.length;
+      while(++i < l){
+        var key = keys[i];
+        var value = this.options.offsets[key];
+
+        if(this.isInView(value)) {
+          if(!this.offsetStates[key]){
+            this.offsetStates[key] = true;
+            this.dispatch('enter:'+key);
+          }
+        }else{
+          if (this.offsetStates[key]) {
+            this.offsetStates[key] = false;
+            this.dispatch('exit:'+key);
+          }
+        }
+      }
+    }
+  }
 
   update() {
     this.scroll.updateScrollPosition();
     this.cachePosition();
-    this.checkInView();
+    this.updateViewState();
   }
 
-  checkInView() {
+  isInView(offset = 0){
     const scrollY = this.scroll.y;
-    if (scrollY <= (this.position.top - this.options.threshold) && (scrollY + this.clientHeight >= this.position.bottom + this.options.threshold)) {
+    return (scrollY <= (this.position.top - offset) && (scrollY + this.clientHeight >= this.position.bottom + offset))
+  }
+
+  updateViewState() {
+    if(this.isInView(this.options.threshold)) {
       if (!this.state.inView) {
         this.setState({ inView: true }, !this.options.enterClass);
-        this.dispatch(LazyView.ENTER);
+        if (!this.isInitial || !this.options.ignoreInitial) {
+          this.dispatch(LazyView.ENTER);
+        }
       }
     } else {
       if (this.state.inView) {
         this.setState({ inView: false }, !this.options.enterClass);
-        this.dispatch(LazyView.EXIT);
+        if (!this.isInitial || !this.options.ignoreInitial) {
+          this.dispatch(LazyView.EXIT);
+        }
       }
     }
+
+    this.isInitial = false;
   }
 
   cachePosition() {
@@ -192,7 +248,7 @@ export default class LazyView extends EventDispatcher {
     this.scroll.off('scroll:start', this.onScroll);
     this.scroll.off('scroll:progress', this.onScroll);
     this.scroll.off('scroll:stop', this.onScroll);
-    this.scroll.off('scroll:update', this.onResize);
+    this.scroll.off('scroll:resize', this.onResize);
 
     if (!this.scroll.hasListeners()) {
       this.scroll.destroy();

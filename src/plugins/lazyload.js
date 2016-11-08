@@ -1,11 +1,14 @@
 import LazyViewPlugin from '../lazyview.plugin';
+import assign from 'object-assign';
+
+const defaults = {
+  destroy: false
+}
 
 module.exports = options => {
 
-  options = options || {};
-
-  return new LazyViewPlugin(lazyView => {
-
+  return new LazyViewPlugin((lazyView) => {
+    var opts = assign({},defaults, options);
     var el = lazyView.el;
     var src = el.getAttribute('data-src');
     var srcset = el.getAttribute('data-srcset');
@@ -13,13 +16,15 @@ module.exports = options => {
     var dispatchLoad = (event) => {
       setTimeout(() => {
         lazyView.scroll.trigger('scroll:resize');
-        // lazyView.destroy();
+        if(opts.destroy){
+          lazyView.destroy();
+        }
       }, 100);
       if(options.loadClass){
-        el.classList.remove(options.loadClass);
+        el.classList.remove(opts.loadClass);
       }
       if(options.completeClass) {
-        el.classList.add(options.completeClass);
+        el.classList.add(opts.completeClass);
       }
       el.removeEventListener('load', dispatchLoad);
     };
@@ -40,16 +45,29 @@ module.exports = options => {
       if (isChanged) {
         el.addEventListener('load', dispatchLoad);
 
-        if(options.loadClass){
-          el.classList.add(options.loadClass);
+        if(opts.loadClass){
+          el.classList.add(opts.loadClass);
         }
 
         el.removeAttribute('data-src');
         el.removeAttribute('data-srcset');
       }
+
+      if(lazyView.options.offsets && lazyView.options.offsets.threshold){
+        delete lazyView.options.offsets.threshold;
+      }
     };
+
+
     if (src || srcset) {
-      lazyView.once('enter', onEnter);
+
+      if(opts.threshold){
+        lazyView.options.offsets = lazyView.options.offsets || {};
+        lazyView.options.offsets.threshold = options.threshold;
+        lazyView.once('enter:threshold', onEnter);
+      }else{
+        lazyView.once('enter', onEnter);
+      }
     } else {
       el = null;
       dispatchLoad = null;

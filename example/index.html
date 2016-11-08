@@ -19,7 +19,7 @@
     width: 100%;
     height: 50px;
     background-color: red;
-    transition: background-color 500ms ease-out;
+    transition: opacity 500ms ease-out, background-color 500ms ease-out;
   }
 
   .lazyview.hugh {
@@ -39,17 +39,19 @@
 
 
   img {
+    transition: opacity 1000ms ease-out;
     opacity: 0;
+  }
+
+  img.in-view.is-loaded{
+    opacity: 1;
   }
 
   img.is-loading.in-view {
     opacity: 0.5;
   }
 
-  img.is-loaded.in-view {
-    transition: opacity 800ms ease-in-out;
-    opacity: 1;
-  }
+
   </style>
 </head>
 
@@ -73,7 +75,7 @@
     <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aliquam repellendus nostrum est, provident culpa repellat doloribus iure temporibus, quod sapiente, distinctio beatae quo. Incidunt qui saepe quidem, non, accusamus odit!</div>
     <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Facilis consectetur provident, saepe minima necessitatibus, placeat ea veritatis id et esse inventore accusamus omnis quibusdam laudantium ipsam iste. Itaque, suscipit, officiis.</div>
     <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Tenetur saepe corporis numquam placeat eius, rerum culpa. Voluptate accusantium animi sunt similique nesciunt, voluptates ratione architecto rerum reiciendis, vel tempora repellat.</div>
-    <img src="https://placeholdit.imgix.net/~text?txtsize=33&txt=2%C3%972&w=2&h=2" data-id="1" data-src="http://lorempixel.com/800/640/" alt="">
+    <img src="https://placeholdit.imgix.net/~text?txtsize=33&txt=2%C3%972&w=2&h=2" data-id="1" data-src="http://lorempixel.com/800/320/" alt="">
     <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Officiis minus iusto magnam, eum? Magnam nihil cum illo, beatae quisquam sequi quos atque ea, minus dignissimos fugiat, nesciunt pariatur mollitia provident.</div>
     <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Fugiat voluptatem est aliquam, ipsa eum saepe at nemo nobis harum provident, amet vero consequuntur architecto eius accusantium porro dicta recusandae quidem!</div>
     <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Fugit fuga neque minus. Blanditiis vitae, maiores totam itaque odit sint nesciunt facere delectus excepturi amet nam magnam tempora labore, ducimus assumenda.</div>
@@ -89,8 +91,8 @@
     <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Voluptatem unde odit sint commodi architecto veniam, necessitatibus optio et excepturi nam. Ut ipsam, voluptas autem ducimus illo repudiandae facere. Cum, consequatur.</div>
     <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Voluptatem unde odit sint commodi architecto veniam, necessitatibus optio et excepturi nam. Ut ipsam, voluptas autem ducimus illo repudiandae facere. Cum, consequatur.</div>
     <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nesciunt, quis laborum, esse quo consequuntur iste! Laudantium vitae repellat illum dolorum iusto est, qui natus minima, doloribus voluptates aliquid obcaecati voluptas.</div>
-    <img src="https://placeholdit.imgix.net/~text?txtsize=33&txt=2%C3%972&w=2&h=2" data-id="2" data-src="http://lorempixel.com/800/640/" alt="">
-    <div class="lazyview">huuuuuaaa</div>
+    <img src="https://placeholdit.imgix.net/~text?txtsize=33&txt=2%C3%972&w=2&h=2" data-id="2" data-src="http://lorempixel.com/800/460/" alt="">
+    <div class="lazyview ltest">huuuuuaaa</div>
     <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Maiores, impedit eveniet, repellendus eligendi animi consequatur esse fuga tempora unde laboriosam laudantium officiis aliquam dolorum mollitia perferendis adipisci fugit non facilis.</div>
     <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eveniet quia, perferendis quaerat quis enim eius, temporibus laboriosam molestiae consequuntur labore quibusdam deleniti maxime sed tempora veritatis voluptatum, explicabo! Dignissimos, atque!</div>
     <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Natus tempora, optio ad incidunt a quam vitae nulla consectetur, non tenetur doloremque excepturi iste laboriosam sint est obcaecati harum porro eaque.</div>
@@ -121,7 +123,7 @@
     <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eligendi eius aspernatur hic perspiciatis assumenda nesciunt dolorem facere velit nulla natus molestias consectetur officiis accusamus perferendis soluta accusantium fugiat ipsa, numquam!</div>
     <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sit autem aliquid voluptatem rerum quisquam tempora dolor totam possimus ipsum nulla. Quo assumenda aperiam veritatis maiores tempore facilis quis, reiciendis aspernatur.</div>
     <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quo aliquid laboriosam culpa perferendis nemo consequatur id quam laudantium minima dolor porro, necessitatibus quasi omnis consequuntur. Accusamus necessitatibus molestiae, ut architecto.</div>
-    <img src="https://placeholdit.imgix.net/~text?txtsize=33&txt=2%C3%972&w=2&h=2" data-id="3" data-src="http://lorempixel.com/800/640/" alt="">
+    <img src="https://placeholdit.imgix.net/~text?txtsize=33&txt=2%C3%972&w=2&h=2" data-id="3" data-src="http://lorempixel.com/800/520/" alt="">
     <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Illo modi deleniti molestias, iste, eum esse. Pariatur quis suscipit tempore, facilis vero incidunt laboriosam quibusdam, quam, possimus animi modi earum aspernatur.</div>
     <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Repellendus sunt, possimus tempora atque officia itaque quibusdam amet sapiente laboriosam hic libero quos voluptatibus aperiam corporis, nisi a delectus alias. Consequatur!</div>
     <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nostrum, hic doloribus dolorem veniam praesentium possimus officiis cum distinctio eius, ipsam aliquid recusandae, magnam vel quidem nesciunt pariatur! Perferendis, natus, impedit.</div>
@@ -134,30 +136,21 @@
   </div>
   <script src="../dist/lazyview.min.js"></script>
   <script src="../dist/lazyview.lazyload.plugin.min.js"></script>
+
   <script>
-
-
-
-  // new LazyView(document.querySelectorAll('.lazyview'), {
-  //   threshold: 60,
-  //   enterClass: 'in-view'
-  // }).on('enter', function(e) {
-  //   console.log(e)
-  // }).on('exit', function(e) {
-  //   console.log(e)
-  // })
-
-  // new LazyView(document.querySelectorAll('[data-src]'), LazyLoadPlugin() )
-
-
-
-  new LazyView(document.querySelectorAll('.lazyview, [data-src]'), LazyLoadPlugin({completeClass: 'is-loaded', loadClass: 'is-loading'}), {
-    // threshold: 60,
+  new LazyView(document.querySelectorAll('.lazyview, [data-src]'), LazyLoadPlugin({completeClass: 'is-loaded', loadClass: 'is-loading', threshold:-400}), {
+    threshold: 0,
+    //offsets: {'50px' :-50, '200px' :-200},
     enterClass: 'in-view'
-  });
-
-
-
+   }).on('enter:threshold', function(e) {
+      console.log('loading img')
+    })
+   .on('enter:50px', function(e) {
+      console.log(e)
+    })
+    .on('exit:threshold', function(e) {
+      console.log(e)
+   })
   </script>
 </body>
 
