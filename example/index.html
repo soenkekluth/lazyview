@@ -135,10 +135,29 @@
     <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Officia dolorem aliquid praesentium cumque sit vero, ducimus atque et. Atque voluptate, dicta nihil obcaecati quo iusto aliquam nam perferendis nemo illum.</div>
   </div>
   <script src="../dist/lazyview.min.js"></script>
-  <script src="../dist/lazyview.lazyload.plugin.min.js"></script>
+  <script src="../dist/lazyview.lazyload.task.min.js"></script>
+  <script src="../dist/lazyview.lazyinit.task.min.js"></script>
 
   <script>
-  new LazyView(document.querySelectorAll('.lazyview, [data-src]'), LazyLoadPlugin({completeClass: 'is-loaded', loadClass: 'is-loading', threshold:-400}), {
+
+
+  var onStart = function() {
+    return new Promise(function(resolve, reject) {
+        setTimeout(function(){
+          console.log('call resolve')
+          resolve();
+        }, 1000);
+    })
+  }
+
+
+  var onComplete = function(){
+    console.log('onComplete')
+    return true;
+  }
+
+  new LazyView(document.querySelectorAll('.lazyview, [data-src]'), [ LazyInitTask({onStart:onStart, onComplete:onComplete}), LazyLoadTask({ completeClass: 'is-loaded', loadClass: 'is-loading', threshold:-400})], {
+    // init: init,
     threshold: 0,
     //offsets: {'50px' :-50, '200px' :-200},
     enterClass: 'in-view'

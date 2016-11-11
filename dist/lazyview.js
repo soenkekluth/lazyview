@@ -14,13 +14,9 @@ var _scrollEvents = require('scroll-events');
 
 var _scrollEvents2 = _interopRequireDefault(_scrollEvents);
 
-var _domready = require('domready');
+var _lazytaskcreator = require('./lazytaskcreator');
 
-var _domready2 = _interopRequireDefault(_domready);
-
-var _lazyview = require('./lazyview.plugin');
-
-var _lazyview2 = _interopRequireDefault(_lazyview);
+var _lazytaskcreator2 = _interopRequireDefault(_lazytaskcreator);
 
 var _objectAssign = require('object-assign');
 
@@ -46,16 +42,15 @@ var isPlainObject = function isPlainObject(obj) {
 var isArray = function isArray(arr) {
   return Object.prototype.toString.call(arr) === '[object Array]';
 };
-var isLazyViewPlugin = function isLazyViewPlugin(obj) {
+var isLazyTaskCreator = function isLazyTaskCreator(obj) {
   return obj && obj.hasOwnProperty('creator');
 };
-
-var instanceName = 0;
 
 var defaults = {
   ignoreInitial: false,
   enterClass: '',
   exitClass: '',
+  init: null,
   threshold: 0,
   offsets: null // {myoffset:100}
 };
@@ -94,12 +89,12 @@ var LazyView = function (_EventDispatcher) {
         return collection;
       }
 
-      return new LazyView(elements, (0, _objectAssign2.default)({}, options), plugins);
+      return new LazyView(elements, (0, _objectAssign2.default)({}, options), tasks);
     }
   }, {
     key: 'plugin',
     value: function plugin(creator) {
-      return new _lazyview2.default(creator);
+      return new _lazytaskcreator2.default(creator);
     }
   }]);
 
@@ -123,15 +118,15 @@ var LazyView = function (_EventDispatcher) {
 
     var el = args[0].tagName !== undefined ? args[0] : null;
     var options = {};
-    var plugins = [];
+    var tasks = [];
 
     if (args.length === 2) {
 
       if (typeof args[1] !== 'undefined') {
-        if (isLazyViewPlugin(args[1])) {
-          plugins.push(args[1]);
+        if (isLazyTaskCreator(args[1])) {
+          tasks.push(args[1]);
         } else if (isArray(args[1])) {
-          plugins.concat(args[1]);
+          tasks.concat(args[1]);
         } else if (isPlainObject(args[1])) {
           options = args[1];
         }
@@ -139,19 +134,19 @@ var LazyView = function (_EventDispatcher) {
     } else if (args.length === 3) {
 
       if (typeof args[1] !== 'undefined') {
-        if (isLazyViewPlugin(args[1])) {
-          plugins.push(args[1]);
+        if (isLazyTaskCreator(args[1])) {
+          tasks.push(args[1]);
         } else if (isArray(args[1])) {
-          plugins = plugins.concat(args[1]);
+          tasks = tasks.concat(args[1]);
         } else if (isPlainObject(args[1])) {
           options = args[1];
         }
       }
       if (typeof args[2] !== 'undefined') {
-        if (isLazyViewPlugin(args[2])) {
-          plugins.push(args[2]);
+        if (isLazyTaskCreator(args[2])) {
+          tasks.push(args[2]);
         } else if (isArray(args[2])) {
-          plugins = plugins.concat(args[2]);
+          tasks = tasks.concat(args[2]);
         } else if (isPlainObject(args[2])) {
           options = args[2];
         }
@@ -160,12 +155,17 @@ var LazyView = function (_EventDispatcher) {
 
     var _this = _possibleConstructorReturn(this, (LazyView.__proto__ || Object.getPrototypeOf(LazyView)).call(this, { target: el }));
 
-    _this.instanceName = ++instanceName;
     _this.el = el;
-    _this.plugins = plugins;
+    _this.tasks = tasks;
     _this.options = (0, _objectAssign2.default)({}, defaults, options);
+    // if(!this.options.init){
+    //   this.options.init = () => Promise.resolve;
+    // }
+
 
     _this.offsetStates = {};
+
+    _this.offsetKeys = _this.options.offsets ? Object.keys(_this.options.offsets) : null;
 
     _this.setState({
       inView: false
@@ -174,9 +174,7 @@ var LazyView = function (_EventDispatcher) {
     _this.onScroll = _this.onScroll.bind(_this); //this.updateViewState.bind(this);
     _this.onResize = _this.update.bind(_this);
 
-    (0, _domready2.default)(function () {
-      return _this.init();
-    });
+    _this.init();
 
     if (elements && elements.length) {
       var _ret;
@@ -192,6 +190,8 @@ var LazyView = function (_EventDispatcher) {
     key: 'init',
     value: function init() {
 
+      this.isInitial = true;
+
       var scrollTarget = _scrollEvents2.default.getScrollParent(this.el);
       this.scroll = _scrollEvents2.default.getInstance(scrollTarget);
       this.scroll.on('scroll:start', this.onScroll);
@@ -204,12 +204,26 @@ var LazyView = function (_EventDispatcher) {
       this.cachePosition();
 
       var i = -1;
-      while (++i < this.plugins.length) {
-        this.plugins[i].creator(this);
+      while (++i < this.tasks.length) {
+        this.tasks[i].creator(this);
       }
 
-      this.isInitial = true;
       this.onScroll();
+    }
+  }, {
+    key: 'addOffset',
+    value: function addOffset(name, value) {
+      this.options.offsets = this.options.offsets || {};
+      this.options.offsets[name] = value;
+      this.offsetKeys = Object.keys(this.options.offsets);
+    }
+  }, {
+    key: 'removeOffset',
+    value: function removeOffset(name) {
+      if (this.options.offsets && this.options.offsets.hasOwnProperty(name)) {
+        delete this.options.offsets[name];
+        this.offsetKeys = Object.keys(this.options.offsets);
+      }
     }
   }, {
     key: 'render',
@@ -231,8 +245,8 @@ var LazyView = function (_EventDispatcher) {
 
       this.updateViewState();
 
-      if (this.options.offsets) {
-        var keys = Object.keys(this.options.offsets);
+      if (this.offsetKeys) {
+        var keys = this.offsetKeys;
         var i = -1;
         var l = keys.length;
         while (++i < l) {
@@ -275,6 +289,9 @@ var LazyView = function (_EventDispatcher) {
         if (!this.state.inView) {
           this.setState({ inView: true }, !this.options.enterClass);
           if (!this.isInitial || !this.options.ignoreInitial) {
+            if (this.options.init) {
+              this.options.init.call(this);
+            }
             this.dispatch(LazyView.ENTER);
           }
         }

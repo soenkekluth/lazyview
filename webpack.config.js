@@ -27,12 +27,29 @@ module.exports = [{
     contentBase: "./",
   }
 },{
-  'context': __dirname + '/src/plugins',
+  'context': __dirname + '/src/tasks',
   'entry': './lazyload.js',
   'output': {
     'path': __dirname + '/dist',
-    'filename': `${package.name}.lazyload.plugin.min.js`,
-    'library': `LazyLoadPlugin`,
+    'filename': `${package.name}.lazyload.task.min.js`,
+    'library': `LazyLoadTask`,
+    'libraryTarget': 'umd'
+  },
+  'module': {
+    'loaders': [{
+      'test': /\.js$/,
+      'exclude': /node_modules/,
+      'loader': 'babel'
+    }]
+  },
+  'plugins': []
+},{
+  'context': __dirname + '/src/tasks',
+  'entry': './lazyinit.js',
+  'output': {
+    'path': __dirname + '/dist',
+    'filename': `${package.name}.lazyinit.task.min.js`,
+    'library': `LazyInitTask`,
     'libraryTarget': 'umd'
   },
   'module': {
