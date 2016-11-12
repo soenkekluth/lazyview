@@ -59,10 +59,8 @@ var LazyLoadTask = function (_LazyTask) {
       var el = this.lazyView.el;
 
       setTimeout(function () {
-        _this2.lazyView.scroll.trigger('scroll:resize');
-        if (_this2.options.destroyOnComplete) {
-          _this2.destroy();
-        }
+        // this.lazyView.scroll.trigger('scroll:resize');
+
       }, 100);
 
       if (this.options.loadClass) {
@@ -72,11 +70,20 @@ var LazyLoadTask = function (_LazyTask) {
       if (this.options.completeClass) {
         el.classList.add(this.options.completeClass);
       }
+
       el.removeEventListener('load', this.dispatchLoad);
 
       if (this.options.onComplete) {
         this.options.onComplete.call(this, this.lazyView);
       }
+
+      setTimeout(function () {
+        // this.lazyView.scroll.trigger('scroll:resize');
+        _this2.lazyView.update();
+        if (_this2.options.destroyOnComplete) {
+          _this2.destroy();
+        }
+      }, 10);
     }
   }, {
     key: 'onEnter',

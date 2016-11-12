@@ -2,7 +2,6 @@ import EventDispatcher from 'eventdispatcher';
 import Scroll from 'scroll-events';
 import LazyTaskCreator from './lazytaskcreator';
 import assign from 'object-assign';
-import deepAssign from 'deep-assign';
 
 const isPlainObject = obj => Object.prototype.toString.call(obj) == '[object Object]';
 const isArray = arr => Object.prototype.toString.call(arr) === '[object Array]';
@@ -111,21 +110,6 @@ export default class LazyView extends EventDispatcher {
     this.el = el;
     this.tasks = tasks;
     this.options = assign({}, defaults, options);
-    // if(!this.options.init){
-    //   this.options.init = () => Promise.resolve;
-    // }
-
-
-    this.offsetStates = {};
-
-    this.offsetKeys = this.options.offsets ? Object.keys(this.options.offsets) : null;
-
-    this.setState({
-      inView: false
-    }, true);
-
-    this.onScroll = this.onScroll.bind(this);//this.updateViewState.bind(this);
-    this.onResize = this.update.bind(this);
 
     this.init();
 
@@ -140,22 +124,41 @@ export default class LazyView extends EventDispatcher {
 
     this.isInitial = true;
 
+    this.state = {
+      inView : false
+    };
+
+    this.offsetStates = {};
+
+    this.offsetKeys = this.options.offsets ? Object.keys(this.options.offsets) : null;
+
+    this.onScroll = this.onScroll.bind(this);
+    this.onResize = this.update.bind(this);
+
+
     var scrollTarget = Scroll.getScrollParent(this.el);
     this.scroll = Scroll.getInstance(scrollTarget);
     this.scroll.on('scroll:start', this.onScroll);
     this.scroll.on('scroll:progress', this.onScroll);
     this.scroll.on('scroll:stop', this.onScroll);
     this.scroll.on('scroll:resize', this.onResize);
-    window.addEventListener('resize', this.onResize, false);
+
     window.addEventListener('orientationchange', this.onResize, false);
 
-    this.cachePosition();
+    const onLoad = ()=>{
+      this.update();
+      window.removeEventListener('load', onLoad);
+    }
+
+    window.addEventListener('load', onLoad, false);
+
 
     var i = -1;
     while (++i < this.tasks.length) {
       this.tasks[i].creator(this);
     }
 
+    this.cachePosition();
     this.onScroll();
   }
 
@@ -214,14 +217,13 @@ export default class LazyView extends EventDispatcher {
   }
 
   update() {
-    this.scroll.updateScrollPosition();
     this.cachePosition();
-    this.updateViewState();
+    this.onScroll();
   }
 
   isInView(offset = 0){
     const scrollY = this.scroll.y;
-    return (scrollY <= (this.position.top - offset) && (scrollY + this.clientHeight >= this.position.bottom + offset))
+    return (scrollY <= (this.position.top - offset) && (scrollY + this.scroll.clientHeight >= this.position.bottom + offset))
   }
 
   updateViewState() {
@@ -248,8 +250,6 @@ export default class LazyView extends EventDispatcher {
   }
 
   cachePosition() {
-    this.clientHeight = this.scroll.clientHeight;
-    this.scrollHeight = this.scroll.scrollHeight;
     this.position = getAbsolutBoundingRect(this.el);
   }
 
@@ -262,26 +262,25 @@ export default class LazyView extends EventDispatcher {
 
   destroy() {
 
-    this.scroll.off('scroll:start', this.onScroll);
-    this.scroll.off('scroll:progress', this.onScroll);
-    this.scroll.off('scroll:stop', this.onScroll);
-    this.scroll.off('scroll:resize', this.onResize);
+    if(this.scroll) {
+      this.scroll.off('scroll:start', this.onScroll);
+      this.scroll.off('scroll:progress', this.onScroll);
+      this.scroll.off('scroll:stop', this.onScroll);
+      this.scroll.off('scroll:resize', this.onResize);
 
-    if (!this.scroll.hasListeners()) {
-      this.scroll.destroy();
-      this.scroll = null;
+      if (!this.scroll.hasListeners()) {
+        this.scroll.destroy();
+        this.scroll = null;
+      }
     }
 
     if (typeof window !== 'undefined') {
-      window.removeEventListener('resize', this.onResize);
       window.removeEventListener('orientationchange', this.onResize);
     }
 
     this.onScroll = null;
     this.onResize = null;
 
-    this.clientHeight = null;
-    this.scrollHeight = null;
     this.position = null;
     this.options = null;
     this.el = null;

@@ -33,10 +33,8 @@ class LazyLoadTask extends LazyTask {
     var el = this.lazyView.el;
 
     setTimeout(() => {
-      this.lazyView.scroll.trigger('scroll:resize');
-      if (this.options.destroyOnComplete) {
-        this.destroy();
-      }
+      // this.lazyView.scroll.trigger('scroll:resize');
+
     }, 100);
 
     if (this.options.loadClass) {
@@ -46,11 +44,21 @@ class LazyLoadTask extends LazyTask {
     if (this.options.completeClass) {
       el.classList.add(this.options.completeClass);
     }
+
     el.removeEventListener('load', this.dispatchLoad);
 
     if (this.options.onComplete) {
       this.options.onComplete.call(this, this.lazyView);
     }
+
+
+    setTimeout(() => {
+      // this.lazyView.scroll.trigger('scroll:resize');
+      this.lazyView.update();
+      if (this.options.destroyOnComplete) {
+        this.destroy();
+      }
+    }, 10);
 
   }
 

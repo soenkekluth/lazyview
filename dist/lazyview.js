@@ -22,10 +22,6 @@ var _objectAssign = require('object-assign');
 
 var _objectAssign2 = _interopRequireDefault(_objectAssign);
 
-var _deepAssign = require('deep-assign');
-
-var _deepAssign2 = _interopRequireDefault(_deepAssign);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
@@ -158,21 +154,6 @@ var LazyView = function (_EventDispatcher) {
     _this.el = el;
     _this.tasks = tasks;
     _this.options = (0, _objectAssign2.default)({}, defaults, options);
-    // if(!this.options.init){
-    //   this.options.init = () => Promise.resolve;
-    // }
-
-
-    _this.offsetStates = {};
-
-    _this.offsetKeys = _this.options.offsets ? Object.keys(_this.options.offsets) : null;
-
-    _this.setState({
-      inView: false
-    }, true);
-
-    _this.onScroll = _this.onScroll.bind(_this); //this.updateViewState.bind(this);
-    _this.onResize = _this.update.bind(_this);
 
     _this.init();
 
@@ -189,8 +170,20 @@ var LazyView = function (_EventDispatcher) {
   _createClass(LazyView, [{
     key: 'init',
     value: function init() {
+      var _this2 = this;
 
       this.isInitial = true;
+
+      this.state = {
+        inView: false
+      };
+
+      this.offsetStates = {};
+
+      this.offsetKeys = this.options.offsets ? Object.keys(this.options.offsets) : null;
+
+      this.onScroll = this.onScroll.bind(this);
+      this.onResize = this.update.bind(this);
 
       var scrollTarget = _scrollEvents2.default.getScrollParent(this.el);
       this.scroll = _scrollEvents2.default.getInstance(scrollTarget);
@@ -198,16 +191,22 @@ var LazyView = function (_EventDispatcher) {
       this.scroll.on('scroll:progress', this.onScroll);
       this.scroll.on('scroll:stop', this.onScroll);
       this.scroll.on('scroll:resize', this.onResize);
-      window.addEventListener('resize', this.onResize, false);
+
       window.addEventListener('orientationchange', this.onResize, false);
 
-      this.cachePosition();
+      var onLoad = function onLoad() {
+        _this2.update();
+        window.removeEventListener('load', onLoad);
+      };
+
+      window.addEventListener('load', onLoad, false);
 
       var i = -1;
       while (++i < this.tasks.length) {
         this.tasks[i].creator(this);
       }
 
+      this.cachePosition();
       this.onScroll();
     }
   }, {
@@ -270,9 +269,8 @@ var LazyView = function (_EventDispatcher) {
   }, {
     key: 'update',
     value: function update() {
-      this.scroll.updateScrollPosition();
       this.cachePosition();
-      this.updateViewState();
+      this.onScroll();
     }
   }, {
     key: 'isInView',
@@ -280,7 +278,7 @@ var LazyView = function (_EventDispatcher) {
       var offset = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
 
       var scrollY = this.scroll.y;
-      return scrollY <= this.position.top - offset && scrollY + this.clientHeight >= this.position.bottom + offset;
+      return scrollY <= this.position.top - offset && scrollY + this.scroll.clientHeight >= this.position.bottom + offset;
     }
   }, {
     key: 'updateViewState',
@@ -309,8 +307,6 @@ var LazyView = function (_EventDispatcher) {
   }, {
     key: 'cachePosition',
     value: function cachePosition() {
-      this.clientHeight = this.scroll.clientHeight;
-      this.scrollHeight = this.scroll.scrollHeight;
       this.position = getAbsolutBoundingRect(this.el);
     }
   }, {
@@ -325,26 +321,25 @@ var LazyView = function (_EventDispatcher) {
     key: 'destroy',
     value: function destroy() {
 
-      this.scroll.off('scroll:start', this.onScroll);
-      this.scroll.off('scroll:progress', this.onScroll);
-      this.scroll.off('scroll:stop', this.onScroll);
-      this.scroll.off('scroll:resize', this.onResize);
+      if (this.scroll) {
+        this.scroll.off('scroll:start', this.onScroll);
+        this.scroll.off('scroll:progress', this.onScroll);
+        this.scroll.off('scroll:stop', this.onScroll);
+        this.scroll.off('scroll:resize', this.onResize);
 
-      if (!this.scroll.hasListeners()) {
-        this.scroll.destroy();
-        this.scroll = null;
+        if (!this.scroll.hasListeners()) {
+          this.scroll.destroy();
+          this.scroll = null;
+        }
       }
 
       if (typeof window !== 'undefined') {
-        window.removeEventListener('resize', this.onResize);
         window.removeEventListener('orientationchange', this.onResize);
       }
 
       this.onScroll = null;
       this.onResize = null;
 
-      this.clientHeight = null;
-      this.scrollHeight = null;
       this.position = null;
       this.options = null;
       this.el = null;
@@ -366,10 +361,10 @@ var LazyViewCollection = function (_EventDispatcher2) {
   function LazyViewCollection() {
     _classCallCheck(this, LazyViewCollection);
 
-    var _this2 = _possibleConstructorReturn(this, (LazyViewCollection.__proto__ || Object.getPrototypeOf(LazyViewCollection)).call(this));
+    var _this3 = _possibleConstructorReturn(this, (LazyViewCollection.__proto__ || Object.getPrototypeOf(LazyViewCollection)).call(this));
 
-    _this2.items = [];
-    return _this2;
+    _this3.items = [];
+    return _this3;
   }
 
   _createClass(LazyViewCollection, [{
