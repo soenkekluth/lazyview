@@ -1,6 +1,6 @@
 {
   "name": "lazyview",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Initialize a View Component related to a dom element when it enters the viewport. Or Lazyload images for example",
   "main": "dist/lazyview.js",
   "scripts": {
@@ -51,6 +51,6 @@
   "dependencies": {
     "eventdispatcher": "2.1.0",
     "object-assign": "4.1.0",
-    "scroll-events": "1.1.2"
+    "scroll-events": "1.1.3"
   }
 }
