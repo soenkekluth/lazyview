@@ -9,33 +9,73 @@ class LazyLoadTask extends LazyTask {
     super(lazyView, options, 'lazyload');
   }
 
-  init() {
-    var el = this.lazyView.el;
+  getLazyItem(el) {
+
     var src = el.getAttribute('data-src');
     var srcset = el.getAttribute('data-srcset');
+    var isLazy = !!(src || srcset);
 
-    if (src || srcset) {
+    if (isLazy) {
+
+      var willLoad = false;
+      if (src && el.getAttribute('src') !== src) {
+        willLoad = true;
+      }
+
+      if (srcset && el.getAttribute('srcset') !== srcset) {
+        willLoad = true
+      }
+
+      if (willLoad) {
+        return el;
+      }
+    }
+    return null;
+  }
+
+  init() {
+
+    this.mediaToLoad = [];
+    this.entered = false;
+
+    var el = this.lazyView.el;
+    if (this.getLazyItem(el)) {
+      this.mediaToLoad.push(el);
+    } else {
+      var elems = el.querySelectorAll('img');
+      for (let i = 0, l = elems.length; i < l; i++) {
+        var elem = elems[i];
+        if (this.getLazyItem(elem)) {
+          this.mediaToLoad.push(elem);
+        }
+      }
+    }
+
+    this.loadCount = this.mediaToLoad.length;
+
+    if (this.loadCount) {
       super.init();
-      this.dispatchLoad = this.dispatchLoad.bind(this);
-    } else{
+      this.onLoad = this.onLoad.bind(this);
+    } else {
       this.destroy();
     }
   }
 
 
-  destroy(){
+  destroy() {
     super.destroy();
-    this.dispatchLoad = null;
+    this.onLoad = null;
   }
 
 
-  dispatchLoad(event) {
-    var el = this.lazyView.el;
+  onLoad(event) {
 
-    setTimeout(() => {
-      // this.lazyView.scroll.trigger('scroll:resize');
+    var el = event.target;
 
-    }, 100);
+    --this.loadCount;
+
+    el.removeEventListener('load', this.onLoad);
+    el.removeEventListener('error', this.onLoad);
 
     if (this.options.loadClass) {
       el.classList.remove(this.options.loadClass);
@@ -45,56 +85,64 @@ class LazyLoadTask extends LazyTask {
       el.classList.add(this.options.completeClass);
     }
 
-    el.removeEventListener('load', this.dispatchLoad);
+    if (this.loadCount === 0) {
 
-    if (this.options.onComplete) {
-      this.options.onComplete.call(this, this.lazyView);
-    }
+      if (this.options.onComplete) {
+        this.options.onComplete.call(this, this.lazyView);
+      }
 
-
-    setTimeout(() => {
-      // this.lazyView.scroll.trigger('scroll:resize');
       this.lazyView.update();
+
       if (this.options.destroyOnComplete) {
         this.destroy();
       }
-    }, 10);
+
+    }
 
   }
 
 
   onEnter() {
-    var el = this.lazyView.el;
-    var src = el.getAttribute('data-src');
-    var srcset = el.getAttribute('data-srcset');
 
-    var isChanged = false;
-    if (src && el.getAttribute('src') !== src) {
-      isChanged = true;
-      el.setAttribute('src', src);
-    }
+    if (!this.entered) {
+      this.entered = true;
 
-    if (srcset && el.getAttribute('srcset') !== srcset) {
-      isChanged = true;
-      el.setAttribute('srcset', srcset);
-    }
+      for (let i = 0, l = this.mediaToLoad.length; i < l; i++) {
+        var el = this.mediaToLoad[i];
 
-    if (isChanged) {
-      el.addEventListener('load', this.dispatchLoad);
 
-      if (this.options.loadClass) {
-        el.classList.add(this.options.loadClass);
+        var src = el.getAttribute('data-src');
+        var srcset = el.getAttribute('data-srcset');
+
+        var isChanged = false;
+        if (src && el.getAttribute('src') !== src) {
+          isChanged = true;
+          el.setAttribute('src', src);
+        }
+
+        if (srcset && el.getAttribute('srcset') !== srcset) {
+          isChanged = true;
+          el.setAttribute('srcset', srcset);
+        }
+
+        if (isChanged) {
+          el.addEventListener('load', this.onLoad);
+          el.addEventListener('error', this.onLoad);
+
+          if (this.options.loadClass) {
+            el.classList.add(this.options.loadClass);
+          }
+
+          el.removeAttribute('data-src');
+          el.removeAttribute('data-srcset');
+        }
       }
 
-      el.removeAttribute('data-src');
-      el.removeAttribute('data-srcset');
-    }
+      this.lazyView.removeOffset(this.name)
 
-    this.lazyView.removeOffset(this.name)
-
-
-    if (this.options.onStart) {
-      this.options.onStart.call(this, this.lazyView);
+      if (this.options.onStart) {
+        this.options.onStart.call(this, this.lazyView);
+      }
     }
   }
 }

@@ -32,15 +32,55 @@ var LazyLoadTask = function (_LazyTask) {
   }
 
   _createClass(LazyLoadTask, [{
-    key: 'init',
-    value: function init() {
-      var el = this.lazyView.el;
+    key: 'getLazyItem',
+    value: function getLazyItem(el) {
+
       var src = el.getAttribute('data-src');
       var srcset = el.getAttribute('data-srcset');
+      var isLazy = !!(src || srcset);
 
-      if (src || srcset) {
+      if (isLazy) {
+
+        var willLoad = false;
+        if (src && el.getAttribute('src') !== src) {
+          willLoad = true;
+        }
+
+        if (srcset && el.getAttribute('srcset') !== srcset) {
+          willLoad = true;
+        }
+
+        if (willLoad) {
+          return el;
+        }
+      }
+      return null;
+    }
+  }, {
+    key: 'init',
+    value: function init() {
+
+      this.mediaToLoad = [];
+      this.entered = false;
+
+      var el = this.lazyView.el;
+      if (this.getLazyItem(el)) {
+        this.mediaToLoad.push(el);
+      } else {
+        var elems = el.querySelectorAll('img');
+        for (var i = 0, l = elems.length; i < l; i++) {
+          var elem = elems[i];
+          if (this.getLazyItem(elem)) {
+            this.mediaToLoad.push(elem);
+          }
+        }
+      }
+
+      this.loadCount = this.mediaToLoad.length;
+
+      if (this.loadCount) {
         _get(LazyLoadTask.prototype.__proto__ || Object.getPrototypeOf(LazyLoadTask.prototype), 'init', this).call(this);
-        this.dispatchLoad = this.dispatchLoad.bind(this);
+        this.onLoad = this.onLoad.bind(this);
       } else {
         this.destroy();
       }
@@ -49,19 +89,18 @@ var LazyLoadTask = function (_LazyTask) {
     key: 'destroy',
     value: function destroy() {
       _get(LazyLoadTask.prototype.__proto__ || Object.getPrototypeOf(LazyLoadTask.prototype), 'destroy', this).call(this);
-      this.dispatchLoad = null;
+      this.onLoad = null;
     }
   }, {
-    key: 'dispatchLoad',
-    value: function dispatchLoad(event) {
-      var _this2 = this;
+    key: 'onLoad',
+    value: function onLoad(event) {
 
-      var el = this.lazyView.el;
+      var el = event.target;
 
-      setTimeout(function () {
-        // this.lazyView.scroll.trigger('scroll:resize');
+      --this.loadCount;
 
-      }, 100);
+      el.removeEventListener('load', this.onLoad);
+      el.removeEventListener('error', this.onLoad);
 
       if (this.options.loadClass) {
         el.classList.remove(this.options.loadClass);
@@ -71,53 +110,61 @@ var LazyLoadTask = function (_LazyTask) {
         el.classList.add(this.options.completeClass);
       }
 
-      el.removeEventListener('load', this.dispatchLoad);
+      if (this.loadCount === 0) {
 
-      if (this.options.onComplete) {
-        this.options.onComplete.call(this, this.lazyView);
-      }
-
-      setTimeout(function () {
-        // this.lazyView.scroll.trigger('scroll:resize');
-        _this2.lazyView.update();
-        if (_this2.options.destroyOnComplete) {
-          _this2.destroy();
+        if (this.options.onComplete) {
+          this.options.onComplete.call(this, this.lazyView);
         }
-      }, 10);
+
+        this.lazyView.update();
+
+        if (this.options.destroyOnComplete) {
+          this.destroy();
+        }
+      }
     }
   }, {
     key: 'onEnter',
     value: function onEnter() {
-      var el = this.lazyView.el;
-      var src = el.getAttribute('data-src');
-      var srcset = el.getAttribute('data-srcset');
 
-      var isChanged = false;
-      if (src && el.getAttribute('src') !== src) {
-        isChanged = true;
-        el.setAttribute('src', src);
-      }
+      if (!this.entered) {
+        this.entered = true;
 
-      if (srcset && el.getAttribute('srcset') !== srcset) {
-        isChanged = true;
-        el.setAttribute('srcset', srcset);
-      }
+        for (var i = 0, l = this.mediaToLoad.length; i < l; i++) {
+          var el = this.mediaToLoad[i];
 
-      if (isChanged) {
-        el.addEventListener('load', this.dispatchLoad);
+          var src = el.getAttribute('data-src');
+          var srcset = el.getAttribute('data-srcset');
 
-        if (this.options.loadClass) {
-          el.classList.add(this.options.loadClass);
+          var isChanged = false;
+          if (src && el.getAttribute('src') !== src) {
+            isChanged = true;
+            el.setAttribute('src', src);
+          }
+
+          if (srcset && el.getAttribute('srcset') !== srcset) {
+            isChanged = true;
+            el.setAttribute('srcset', srcset);
+          }
+
+          if (isChanged) {
+            el.addEventListener('load', this.onLoad);
+            el.addEventListener('error', this.onLoad);
+
+            if (this.options.loadClass) {
+              el.classList.add(this.options.loadClass);
+            }
+
+            el.removeAttribute('data-src');
+            el.removeAttribute('data-srcset');
+          }
         }
 
-        el.removeAttribute('data-src');
-        el.removeAttribute('data-srcset');
-      }
+        this.lazyView.removeOffset(this.name);
 
-      this.lazyView.removeOffset(this.name);
-
-      if (this.options.onStart) {
-        this.options.onStart.call(this, this.lazyView);
+        if (this.options.onStart) {
+          this.options.onStart.call(this, this.lazyView);
+        }
       }
     }
   }]);
