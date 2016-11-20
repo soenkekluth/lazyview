@@ -174,10 +174,11 @@ export default class LazyView extends EventDispatcher {
 
 
     window.addEventListener('load', onWindowLoad, false);
-    if(document.readyState !== 'complete'){
+    if (document.readyState !== 'complete') {
       document.addEventListener("DOMContentLoaded", onDom, false);
+    } else {
+      this.update();
     }
-
   }
 
 
@@ -256,14 +257,14 @@ export default class LazyView extends EventDispatcher {
         if (this.options.init) {
           this.options.init.call(this);
         }
-        if (!(this.isInitial && this.options.ignoreInitial)){
+        if (!(this.isInitial && this.options.ignoreInitial)) {
           this.dispatch(LazyView.ENTER);
         }
       }
     } else {
       if (this.state.inView) {
         this.setInview(false, !this.options.enterClass);
-        if (!(this.isInitial && this.options.ignoreInitial)){
+        if (!(this.isInitial && this.options.ignoreInitial)) {
           this.dispatch(LazyView.EXIT);
         }
       }

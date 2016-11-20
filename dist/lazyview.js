@@ -220,6 +220,8 @@ var LazyView = function (_EventDispatcher) {
       window.addEventListener('load', onWindowLoad, false);
       if (document.readyState !== 'complete') {
         document.addEventListener("DOMContentLoaded", onDom, false);
+      } else {
+        this.update();
       }
     }
   }, {
