@@ -37,6 +37,11 @@
     margin-bottom: 10px;
   }
 
+  .fixed {
+    position: fixed;
+    top: 0;
+  }
+
   img {
     transition: opacity 1000ms ease-out;
     opacity: 0;
@@ -89,6 +94,7 @@
     <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nesciunt, quis laborum, esse quo consequuntur iste! Laudantium vitae repellat illum dolorum iusto est, qui natus minima, doloribus voluptates aliquid obcaecati voluptas.</div>
     <img class="lazyitem" src="https://placeholdit.imgix.net/~text?txtsize=33&txt=2%C3%972&w=2&h=2" data-id="2" data-src="http://lorempixel.com/800/460/" alt="">
     <div class="lazyview ltest">huuuuuaaa</div>
+    <div class="lazyview ltest fixed">huuuuuaaa</div>
     <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Maiores, impedit eveniet, repellendus eligendi animi consequatur esse fuga tempora unde laboriosam laudantium officiis aliquam dolorum mollitia perferendis adipisci fugit non facilis.</div>
     <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eveniet quia, perferendis quaerat quis enim eius, temporibus laboriosam molestiae consequuntur labore quibusdam deleniti maxime sed tempora veritatis voluptatum, explicabo! Dignissimos, atque!</div>
     <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Natus tempora, optio ad incidunt a quam vitae nulla consectetur, non tenetur doloremque excepturi iste laboriosam sint est obcaecati harum porro eaque.</div>
@@ -157,20 +163,29 @@
     return true;
   }
 
+
+  // var elems = document.querySelectorAll('.lazyview');
+  // for(var i = 0, l = elems.length; i<l; i++){
+  //   new LazyView(elems[i], {
+  //     enterClass: 'in-view'
+  //   }).on('enter', function(e) {
+  //     console.log('enter')
+  //   })
+  // }
+
   new LazyView(document.querySelectorAll('.lazyview, .lazyitem'), [ LazyInitTask({onStart:onStart, onComplete:onComplete}), LazyLoadTask({ completeClass: 'is-loaded', loadClass: 'is-loading', threshold:-400})], {
     // init: init,
     threshold: 0,
     //offsets: {'50px' :-50, '200px' :-200},
     enterClass: 'in-view'
-   }).on('enter:threshold', function(e) {
-      console.log('loading img')
-    })
-   .on('enter:50px', function(e) {
-      console.log(e)
-    })
-    .on('exit:threshold', function(e) {
-      console.log(e)
    })
+    .on('enter', function(e) {
+      console.log('enter')
+    })
+   .on('exit', function(e) {
+      console.log('enter')
+    })
+
   </script>
 </body>
 

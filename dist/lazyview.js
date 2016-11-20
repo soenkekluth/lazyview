@@ -65,6 +65,11 @@ var getAbsolutBoundingRect = function getAbsolutBoundingRect(el, fixedHeight) {
   };
 };
 
+var getPositionStyle = function getPositionStyle(el) {
+  var style = window.getComputedStyle(el, null);
+  return style.getPropertyValue('position');
+};
+
 var LazyView = function (_EventDispatcher) {
   _inherits(LazyView, _EventDispatcher);
 
@@ -108,7 +113,6 @@ var LazyView = function (_EventDispatcher) {
     var elements;
     if (args[0] instanceof window.NodeList) {
       elements = [].slice.call(args[0], 1);
-      // return LazyView.apply(elements, args.splice(1,args.length));
       args[0] = args[0][0];
     }
 
@@ -175,39 +179,48 @@ var LazyView = function (_EventDispatcher) {
       this.isInitial = true;
 
       this.state = {
-        inView: false
+        inView: false,
+        position: getPositionStyle(this.el)
       };
 
       this.offsetStates = {};
-
       this.offsetKeys = this.options.offsets ? Object.keys(this.options.offsets) : null;
-
       this.onScroll = this.onScroll.bind(this);
       this.onResize = this.update.bind(this);
 
       var scrollTarget = _scrollEvents2.default.getScrollParent(this.el);
       this.scroll = _scrollEvents2.default.getInstance(scrollTarget);
-      this.scroll.on('scroll:start', this.onScroll);
-      this.scroll.on('scroll:progress', this.onScroll);
-      this.scroll.on('scroll:stop', this.onScroll);
-      this.scroll.on('scroll:resize', this.onResize);
 
-      window.addEventListener('orientationchange', this.onResize, false);
-
-      var onLoad = function onLoad() {
+      var onWindowLoad = function onWindowLoad() {
         _this2.update();
-        window.removeEventListener('load', onLoad);
+        window.removeEventListener('load', onWindowLoad);
       };
 
-      window.addEventListener('load', onLoad, false);
+      var onDom = function onDom() {
+        _this2.update();
+        document.removeEventListener("DOMContentLoaded", onDom);
+      };
+
+      // document.addEventListener("readystatechange", function(event) {
+      //     console.log(event);
+      // });
+
 
       var i = -1;
       while (++i < this.tasks.length) {
         this.tasks[i].creator(this);
       }
 
-      this.cachePosition();
-      this.onScroll();
+      this.scroll.on('scroll:start', this.onScroll);
+      this.scroll.on('scroll:progress', this.onScroll);
+      this.scroll.on('scroll:stop', this.onScroll);
+      this.scroll.on('scroll:resize', this.onResize);
+      window.addEventListener('orientationchange', this.onResize, false);
+
+      window.addEventListener('load', onWindowLoad, false);
+      if (document.readyState !== 'complete') {
+        document.addEventListener("DOMContentLoaded", onDom, false);
+      }
     }
   }, {
     key: 'addOffset',
@@ -277,6 +290,9 @@ var LazyView = function (_EventDispatcher) {
     value: function isInView() {
       var offset = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
 
+      if (this.state.position === 'fixed') {
+        return true;
+      }
       var scrollY = this.scroll.y;
       return scrollY <= this.position.top - offset && scrollY + this.scroll.clientHeight >= this.position.bottom + offset;
     }
@@ -285,18 +301,20 @@ var LazyView = function (_EventDispatcher) {
     value: function updateViewState() {
       if (this.isInView(this.options.threshold)) {
         if (!this.state.inView) {
-          this.setState({ inView: true }, !this.options.enterClass);
-          if (!this.isInitial || !this.options.ignoreInitial) {
-            if (this.options.init) {
-              this.options.init.call(this);
-            }
+
+          this.setInview(true, !this.options.enterClass);
+
+          if (this.options.init) {
+            this.options.init.call(this);
+          }
+          if (!(this.isInitial && this.options.ignoreInitial)) {
             this.dispatch(LazyView.ENTER);
           }
         }
       } else {
         if (this.state.inView) {
-          this.setState({ inView: false }, !this.options.enterClass);
-          if (!this.isInitial || !this.options.ignoreInitial) {
+          this.setInview(false, !this.options.enterClass);
+          if (!(this.isInitial && this.options.ignoreInitial)) {
             this.dispatch(LazyView.EXIT);
           }
         }
@@ -310,9 +328,9 @@ var LazyView = function (_EventDispatcher) {
       this.position = getAbsolutBoundingRect(this.el);
     }
   }, {
-    key: 'setState',
-    value: function setState(newState, silent) {
-      this.state = (0, _objectAssign2.default)({}, this.state, newState);
+    key: 'setInview',
+    value: function setInview(value, silent) {
+      this.state.inView = value;
       if (silent !== true) {
         this.render();
       }

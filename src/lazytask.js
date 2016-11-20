@@ -34,11 +34,11 @@ export default class LazyTask {
   init() {
     if (this.options.threshold) {
       this.lazyView.addOffset(this.name, this.options.threshold);
-      this.lazyView.once('enter:' + this.name, this.onEnter);
-      this.lazyView.once('exit:' + this.name, this.onExit);
+      this.lazyView.one('enter:' + this.name, this.onEnter);
+      this.lazyView.one('exit:' + this.name, this.onExit);
     } else {
-      this.lazyView.once('enter', this.onEnter);
-      this.lazyView.once('exit', this.onExit);
+      this.lazyView.one('enter', this.onEnter);
+      this.lazyView.one('exit', this.onExit);
     }
   }
 
