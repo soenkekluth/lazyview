@@ -116,6 +116,24 @@ export default class LazyView extends EventDispatcher {
     this.tasks = tasks;
     this.options = assign({}, defaults, options);
 
+    const onWindowLoad = () => {
+      this.init();
+      window.removeEventListener('load', onWindowLoad);
+    }
+
+    const onDom = () => {
+      this.init();
+      document.removeEventListener("DOMContentLoaded", onDom);
+    }
+
+    window.addEventListener('load', onWindowLoad, false);
+    if (document.readyState !== 'complete') {
+      document.addEventListener("DOMContentLoaded", onDom, false);
+    } else {
+      this.init();
+    }
+
+
     this.init();
 
     if (elements && elements.length) {
@@ -143,18 +161,6 @@ export default class LazyView extends EventDispatcher {
     var scrollTarget = Scroll.getScrollParent(this.el);
     this.scroll = Scroll.getInstance(scrollTarget);
 
-
-    const onWindowLoad = () => {
-      this.update();
-      window.removeEventListener('load', onWindowLoad);
-    }
-
-    const onDom = () => {
-      this.update();
-      document.removeEventListener("DOMContentLoaded", onDom);
-    }
-
-
     // document.addEventListener("readystatechange", function(event) {
     //     console.log(event);
     // });
@@ -172,13 +178,8 @@ export default class LazyView extends EventDispatcher {
     this.scroll.on('scroll:resize', this.onResize);
     window.addEventListener('orientationchange', this.onResize, false);
 
+    this.update();
 
-    window.addEventListener('load', onWindowLoad, false);
-    if (document.readyState !== 'complete') {
-      document.addEventListener("DOMContentLoaded", onDom, false);
-    } else {
-      this.update();
-    }
   }
 
 

@@ -159,6 +159,23 @@ var LazyView = function (_EventDispatcher) {
     _this.tasks = tasks;
     _this.options = (0, _objectAssign2.default)({}, defaults, options);
 
+    var onWindowLoad = function onWindowLoad() {
+      _this.init();
+      window.removeEventListener('load', onWindowLoad);
+    };
+
+    var onDom = function onDom() {
+      _this.init();
+      document.removeEventListener("DOMContentLoaded", onDom);
+    };
+
+    window.addEventListener('load', onWindowLoad, false);
+    if (document.readyState !== 'complete') {
+      document.addEventListener("DOMContentLoaded", onDom, false);
+    } else {
+      _this.init();
+    }
+
     _this.init();
 
     if (elements && elements.length) {
@@ -174,7 +191,6 @@ var LazyView = function (_EventDispatcher) {
   _createClass(LazyView, [{
     key: 'init',
     value: function init() {
-      var _this2 = this;
 
       this.isInitial = true;
 
@@ -190,16 +206,6 @@ var LazyView = function (_EventDispatcher) {
 
       var scrollTarget = _scrollEvents2.default.getScrollParent(this.el);
       this.scroll = _scrollEvents2.default.getInstance(scrollTarget);
-
-      var onWindowLoad = function onWindowLoad() {
-        _this2.update();
-        window.removeEventListener('load', onWindowLoad);
-      };
-
-      var onDom = function onDom() {
-        _this2.update();
-        document.removeEventListener("DOMContentLoaded", onDom);
-      };
 
       // document.addEventListener("readystatechange", function(event) {
       //     console.log(event);
@@ -217,12 +223,7 @@ var LazyView = function (_EventDispatcher) {
       this.scroll.on('scroll:resize', this.onResize);
       window.addEventListener('orientationchange', this.onResize, false);
 
-      window.addEventListener('load', onWindowLoad, false);
-      if (document.readyState !== 'complete') {
-        document.addEventListener("DOMContentLoaded", onDom, false);
-      } else {
-        this.update();
-      }
+      this.update();
     }
   }, {
     key: 'addOffset',
@@ -381,10 +382,10 @@ var LazyViewCollection = function (_EventDispatcher2) {
   function LazyViewCollection() {
     _classCallCheck(this, LazyViewCollection);
 
-    var _this3 = _possibleConstructorReturn(this, (LazyViewCollection.__proto__ || Object.getPrototypeOf(LazyViewCollection)).call(this));
+    var _this2 = _possibleConstructorReturn(this, (LazyViewCollection.__proto__ || Object.getPrototypeOf(LazyViewCollection)).call(this));
 
-    _this3.items = [];
-    return _this3;
+    _this2.items = [];
+    return _this2;
   }
 
   _createClass(LazyViewCollection, [{
