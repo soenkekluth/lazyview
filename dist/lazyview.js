@@ -159,24 +159,16 @@ var LazyView = function (_EventDispatcher) {
     _this.tasks = tasks;
     _this.options = (0, _objectAssign2.default)({}, defaults, options);
 
-    var onWindowLoad = function onWindowLoad() {
-      _this.init();
-      window.removeEventListener('load', onWindowLoad);
+    _this.state = {
+      inView: false,
+      position: getPositionStyle(_this.el)
     };
 
-    var onDom = function onDom() {
-      _this.init();
-      document.removeEventListener("DOMContentLoaded", onDom);
-    };
+    _this.scroll = _scrollEvents2.default.getInstance(_scrollEvents2.default.getScrollParent(_this.el));
+    _this.offsetStates = {};
+    _this.offsetKeys = _this.options.offsets ? Object.keys(_this.options.offsets) : null;
 
-    window.addEventListener('load', onWindowLoad, false);
-    if (document.readyState !== 'complete') {
-      document.addEventListener("DOMContentLoaded", onDom, false);
-    } else {
-      _this.init();
-    }
-
-    _this.init();
+    _this.addReadyListener();
 
     if (elements && elements.length) {
       var _ret;
@@ -189,28 +181,38 @@ var LazyView = function (_EventDispatcher) {
   }
 
   _createClass(LazyView, [{
+    key: 'addReadyListener',
+    value: function addReadyListener() {
+      var _this2 = this;
+
+      var isInited = false;
+
+      var onComplete = function onComplete(e) {
+        if (e) {
+          e.target.removeEventListener(e.type, onComplete);
+        }
+        if (!isInited) {
+          isInited = true;
+          _this2.init();
+        } else {
+          _this2.update();
+        }
+      };
+
+      window.addEventListener('load', onComplete, false);
+      if (document.readyState !== 'complete') {
+        document.addEventListener("DOMContentLoaded", onComplete, false);
+      } else {
+        onComplete();
+      }
+    }
+  }, {
     key: 'init',
     value: function init() {
 
       this.isInitial = true;
-
-      this.state = {
-        inView: false,
-        position: getPositionStyle(this.el)
-      };
-
-      this.offsetStates = {};
-      this.offsetKeys = this.options.offsets ? Object.keys(this.options.offsets) : null;
       this.onScroll = this.onScroll.bind(this);
       this.onResize = this.update.bind(this);
-
-      var scrollTarget = _scrollEvents2.default.getScrollParent(this.el);
-      this.scroll = _scrollEvents2.default.getInstance(scrollTarget);
-
-      // document.addEventListener("readystatechange", function(event) {
-      //     console.log(event);
-      // });
-
 
       var i = -1;
       while (++i < this.tasks.length) {
@@ -285,6 +287,7 @@ var LazyView = function (_EventDispatcher) {
   }, {
     key: 'update',
     value: function update() {
+      // this.scroll.update();
       this.cachePosition();
       this.onScroll();
     }
@@ -372,8 +375,6 @@ var LazyView = function (_EventDispatcher) {
 
 LazyView.ENTER = 'enter';
 LazyView.EXIT = 'exit';
-LazyView.ENTER_OFFSET = 'enter:offset';
-LazyView.EXIT_OFFSET = 'exit:offset';
 exports.default = LazyView;
 
 var LazyViewCollection = function (_EventDispatcher2) {
@@ -382,10 +383,10 @@ var LazyViewCollection = function (_EventDispatcher2) {
   function LazyViewCollection() {
     _classCallCheck(this, LazyViewCollection);
 
-    var _this2 = _possibleConstructorReturn(this, (LazyViewCollection.__proto__ || Object.getPrototypeOf(LazyViewCollection)).call(this));
+    var _this3 = _possibleConstructorReturn(this, (LazyViewCollection.__proto__ || Object.getPrototypeOf(LazyViewCollection)).call(this));
 
-    _this2.items = [];
-    return _this2;
+    _this3.items = [];
+    return _this3;
   }
 
   _createClass(LazyViewCollection, [{

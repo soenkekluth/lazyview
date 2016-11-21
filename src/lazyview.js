@@ -40,9 +40,6 @@ export default class LazyView extends EventDispatcher {
   static ENTER = 'enter';
   static EXIT = 'exit';
 
-  static ENTER_OFFSET = 'enter:offset';
-  static EXIT_OFFSET = 'exit:offset';
-
   static apply(elements, ...rest) {
 
     if (elements && elements.length) {
@@ -116,25 +113,17 @@ export default class LazyView extends EventDispatcher {
     this.tasks = tasks;
     this.options = assign({}, defaults, options);
 
-    const onWindowLoad = () => {
-      this.init();
-      window.removeEventListener('load', onWindowLoad);
-    }
+    this.state = {
+      inView: false,
+      position: getPositionStyle(this.el)
+    };
 
-    const onDom = () => {
-      this.init();
-      document.removeEventListener("DOMContentLoaded", onDom);
-    }
-
-    window.addEventListener('load', onWindowLoad, false);
-    if (document.readyState !== 'complete') {
-      document.addEventListener("DOMContentLoaded", onDom, false);
-    } else {
-      this.init();
-    }
+    this.scroll = Scroll.getInstance(Scroll.getScrollParent(this.el));
+    this.offsetStates = {};
+    this.offsetKeys = this.options.offsets ? Object.keys(this.options.offsets) : null;
 
 
-    this.init();
+    this.addReadyListener();
 
     if (elements && elements.length) {
       var collection = LazyView.apply(elements, ...args.splice(1, args.length));
@@ -143,34 +132,41 @@ export default class LazyView extends EventDispatcher {
     }
   }
 
+
+  addReadyListener() {
+    var isInited = false;
+
+    const onComplete = (e) => {
+      if(e){
+        e.target.removeEventListener(e.type, onComplete);
+      }
+      if(!isInited){
+        isInited = true;
+        this.init();
+      }else{
+        this.update();
+      }
+    }
+
+    window.addEventListener('load', onComplete, false);
+    if (document.readyState !== 'complete') {
+      document.addEventListener("DOMContentLoaded", onComplete, false);
+    } else {
+      onComplete();
+    }
+  }
+
+
   init() {
 
     this.isInitial = true;
-
-    this.state = {
-      inView: false,
-      position: getPositionStyle(this.el)
-    };
-
-    this.offsetStates = {};
-    this.offsetKeys = this.options.offsets ? Object.keys(this.options.offsets) : null;
     this.onScroll = this.onScroll.bind(this);
     this.onResize = this.update.bind(this);
-
-
-    var scrollTarget = Scroll.getScrollParent(this.el);
-    this.scroll = Scroll.getInstance(scrollTarget);
-
-    // document.addEventListener("readystatechange", function(event) {
-    //     console.log(event);
-    // });
-
 
     var i = -1;
     while (++i < this.tasks.length) {
       this.tasks[i].creator(this);
     }
-
 
     this.scroll.on('scroll:start', this.onScroll);
     this.scroll.on('scroll:progress', this.onScroll);
@@ -237,6 +233,7 @@ export default class LazyView extends EventDispatcher {
   }
 
   update() {
+    // this.scroll.update();
     this.cachePosition();
     this.onScroll();
   }
