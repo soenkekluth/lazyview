@@ -10,9 +10,9 @@ var _eventdispatcher = require('eventdispatcher');
 
 var _eventdispatcher2 = _interopRequireDefault(_eventdispatcher);
 
-var _scrollEvents = require('scroll-events');
+var _scrollfeatures = require('scrollfeatures');
 
-var _scrollEvents2 = _interopRequireDefault(_scrollEvents);
+var _scrollfeatures2 = _interopRequireDefault(_scrollfeatures);
 
 var _lazytaskcreator = require('./lazytaskcreator');
 
@@ -54,10 +54,10 @@ var defaults = {
 var getAbsolutBoundingRect = function getAbsolutBoundingRect(el, fixedHeight) {
   var rect = el.getBoundingClientRect();
   var height = fixedHeight || rect.height;
-  var top = rect.top + _scrollEvents2.default.windowScrollY + height;
+  var top = rect.top + _scrollfeatures2.default.windowY + height;
   return {
     top: top,
-    bottom: rect.bottom + _scrollEvents2.default.windowScrollY - height,
+    bottom: rect.bottom + _scrollfeatures2.default.windowY - height,
     height: height,
     width: rect.width,
     left: rect.left,
@@ -164,7 +164,7 @@ var LazyView = function (_EventDispatcher) {
       position: getPositionStyle(_this.el)
     };
 
-    _this.scroll = _scrollEvents2.default.getInstance(_scrollEvents2.default.getScrollParent(_this.el));
+    _this.scroll = _scrollfeatures2.default.getInstance(_scrollfeatures2.default.getScrollParent(_this.el));
     _this.offsetStates = {};
     _this.offsetKeys = _this.options.offsets ? Object.keys(_this.options.offsets) : null;
 

@@ -1,5 +1,5 @@
 import EventDispatcher from 'eventdispatcher';
-import Scroll from 'scroll-events';
+import Scroll from 'scrollfeatures';
 import LazyTaskCreator from './lazytaskcreator';
 import assign from 'object-assign';
 
@@ -19,10 +19,10 @@ const defaults = {
 const getAbsolutBoundingRect = (el, fixedHeight) => {
   var rect = el.getBoundingClientRect();
   var height = fixedHeight || rect.height;
-  var top = rect.top + Scroll.windowScrollY + height;
+  var top = rect.top + Scroll.windowY + height;
   return {
     top: top,
-    bottom: rect.bottom + Scroll.windowScrollY - height,
+    bottom: rect.bottom + Scroll.windowY - height,
     height: height,
     width: rect.width,
     left: rect.left,
