@@ -121,7 +121,7 @@ export default class LazyView extends EventDispatcher {
     };
 
     if(this.options.autoInit) {
-      setTimeout(()=>{this.init()},0);
+      this.init();
     }
 
     if (elements && elements.length) {

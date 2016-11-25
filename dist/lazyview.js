@@ -164,9 +164,7 @@ var LazyView = function (_EventDispatcher) {
     };
 
     if (_this.options.autoInit) {
-      setTimeout(function () {
-        _this.init();
-      }, 0);
+      _this.init();
     }
 
     if (elements && elements.length) {
