@@ -148,11 +148,11 @@
   <script>
 
 
-  var onStart = function() {
+  var onStart = function(lazyView) {
     return new Promise(function(resolve, reject) {
         setTimeout(function(){
           console.log('call resolve')
-          resolve();
+          resolve(lazyView);
         }, 1000);
     })
   }
@@ -164,15 +164,6 @@
     return true;
   }
 
-
-  // var elems = document.querySelectorAll('.lazyview');
-  // for(var i = 0, l = elems.length; i<l; i++){
-  //   new LazyView(elems[i], {
-  //     enterClass: 'in-view'
-  //   }).on('enter', function(e) {
-  //     console.log('enter')
-  //   })
-  // }
 
   new LazyView(document.querySelectorAll('.lazyview, .lazyitem'), [ LazyInitTask({onStart:onStart, onComplete:onComplete}), LazyLoadTask({ completeClass: 'is-loaded', loadClass: 'is-loading', threshold:-400})], {
     // init: init,

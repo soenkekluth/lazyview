@@ -87,25 +87,28 @@ class LazyLoadTask extends LazyTask {
 
     if (this.loadCount === 0) {
 
-      if (this.options.onComplete) {
-        this.options.onComplete.call(this, this.lazyView);
-      }
-
-      this.lazyView.update();
+      var lazyView = this.lazyView;
+      setTimeout(() => {
+        this.loadResolver(lazyView);
+        lazyView = null;
+      }, 1)
 
       if (this.options.destroyOnComplete) {
         this.destroy();
       }
-
     }
-
   }
 
 
-  onEnter() {
+  onStart() {
 
-    if (!this.entered) {
-      this.entered = true;
+    return new Promise((resolve, reject) => {
+
+      this.loadResolver = resolve;
+      if(!this.mediaToLoad.length){
+        this.loadResolver(this.lazyView);
+        return;
+      }
 
       for (let i = 0, l = this.mediaToLoad.length; i < l; i++) {
         var el = this.mediaToLoad[i];
@@ -139,11 +142,8 @@ class LazyLoadTask extends LazyTask {
       }
 
       this.lazyView.removeOffset(this.name)
+    });
 
-      if (this.options.onStart) {
-        this.options.onStart.call(this, this.lazyView);
-      }
-    }
   }
 }
 

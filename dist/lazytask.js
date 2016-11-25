@@ -50,34 +50,73 @@ var LazyTask = function () {
       }
     }
   }, {
-    key: 'onStart',
-    value: function onStart(arg) {
+    key: 'onStop',
+    value: function onStop(arg) {
       return Promise.resolve(arg);
     }
   }, {
+    key: 'onStart',
+    value: function onStart(lazyView) {
+      return Promise.resolve(lazyView);
+    }
+  }, {
     key: 'onComplete',
-    value: function onComplete(arg) {
-      return Promise.resolve(arg);
+    value: function onComplete(lazyView) {
+      return Promise.resolve(lazyView);
+    }
+  }, {
+    key: 'onAfterComplete',
+    value: function onAfterComplete(lazyView) {
+      if (lazyView.el.clientHeight !== lazyView.position.height) {
+        lazyView.scroll.trigger('scroll:resize');
+      }
+      return Promise.resolve(lazyView);
     }
   }, {
     key: 'onEnter',
     value: function onEnter() {
       var _this = this;
 
-      var onStart = this.options.onStart || this.onStart;
-      var onComplete = this.options.onComplete || this.onComplete;
-
-      var result = onStart.call(this, this.lazyView);
-      if (result.then) {
-        return result.then(function (res) {
-          return onComplete.call(_this, res || _this.lazyView);
-        });
-      }
-      return onComplete(result);
+      var result = this.onStart(this.lazyView).then(function (arg) {
+        if (_this.options && _this.options.onStart) {
+          var res = _this.options.onStart.call(_this, _this.lazyView);
+          if (res.then) {
+            return res;
+          }
+        }
+        return arg;
+      }).then(function (arg) {
+        return _this.onComplete(arg);
+      }).then(function (arg) {
+        return _this.onAfterComplete(arg);
+      }).then(function (arg) {
+        if (_this.options && _this.options.onComplete) {
+          var res = _this.options.onComplete.call(_this, _this.lazyView);
+          if (res.then) {
+            return res;
+          }
+        }
+        return arg;
+      });
+      return result;
     }
   }, {
     key: 'onExit',
-    value: function onExit() {}
+    value: function onExit() {
+      var _this2 = this;
+
+      var lazyView = this.lazyView;
+      var result = this.onStop(lazyView).then(function (arg) {
+        if (_this2.options && _this2.options.onStop) {
+          var res = _this2.options.onStop.call(_this2, lazyView);
+          if (res.then) {
+            return res;
+          }
+        }
+        return arg;
+      });
+      return result;
+    }
   }]);
 
   return LazyTask;
@@ -88,6 +127,7 @@ LazyTask.defaults = {
   completeClass: null,
   initClass: null,
   onStart: null,
+  onStop: null,
   onComplete: null,
   onEnter: null,
   onExit: null

@@ -94,6 +94,7 @@ var LazyLoadTask = function (_LazyTask) {
   }, {
     key: 'onLoad',
     value: function onLoad(event) {
+      var _this2 = this;
 
       var el = event.target;
 
@@ -112,11 +113,11 @@ var LazyLoadTask = function (_LazyTask) {
 
       if (this.loadCount === 0) {
 
-        if (this.options.onComplete) {
-          this.options.onComplete.call(this, this.lazyView);
-        }
-
-        this.lazyView.update();
+        var lazyView = this.lazyView;
+        setTimeout(function () {
+          _this2.loadResolver(lazyView);
+          lazyView = null;
+        }, 1);
 
         if (this.options.destroyOnComplete) {
           this.destroy();
@@ -124,14 +125,20 @@ var LazyLoadTask = function (_LazyTask) {
       }
     }
   }, {
-    key: 'onEnter',
-    value: function onEnter() {
+    key: 'onStart',
+    value: function onStart() {
+      var _this3 = this;
 
-      if (!this.entered) {
-        this.entered = true;
+      return new Promise(function (resolve, reject) {
 
-        for (var i = 0, l = this.mediaToLoad.length; i < l; i++) {
-          var el = this.mediaToLoad[i];
+        _this3.loadResolver = resolve;
+        if (!_this3.mediaToLoad.length) {
+          _this3.loadResolver(_this3.lazyView);
+          return;
+        }
+
+        for (var i = 0, l = _this3.mediaToLoad.length; i < l; i++) {
+          var el = _this3.mediaToLoad[i];
 
           var src = el.getAttribute('data-src');
           var srcset = el.getAttribute('data-srcset');
@@ -148,11 +155,11 @@ var LazyLoadTask = function (_LazyTask) {
           }
 
           if (isChanged) {
-            el.addEventListener('load', this.onLoad);
-            el.addEventListener('error', this.onLoad);
+            el.addEventListener('load', _this3.onLoad);
+            el.addEventListener('error', _this3.onLoad);
 
-            if (this.options.loadClass) {
-              el.classList.add(this.options.loadClass);
+            if (_this3.options.loadClass) {
+              el.classList.add(_this3.options.loadClass);
             }
 
             el.removeAttribute('data-src');
@@ -160,12 +167,8 @@ var LazyLoadTask = function (_LazyTask) {
           }
         }
 
-        this.lazyView.removeOffset(this.name);
-
-        if (this.options.onStart) {
-          this.options.onStart.call(this, this.lazyView);
-        }
-      }
+        _this3.lazyView.removeOffset(_this3.name);
+      });
     }
   }]);
 
