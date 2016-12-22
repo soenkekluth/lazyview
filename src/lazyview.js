@@ -31,7 +31,7 @@ const getAbsolutBoundingRect = (el, fixedHeight) => {
 };
 
 const getPositionStyle = (el) => {
-  if(typeof window !== 'undefined'){
+  if (typeof window !== 'undefined') {
     const style = window.getComputedStyle(el, null);
     return style.getPropertyValue('position');
   }
@@ -117,10 +117,11 @@ export default class LazyView extends EventDispatcher {
       firstRender: true,
       initialized: false,
       inView: false,
+      viewProgress: 0,
       position: getPositionStyle(this.el)
     };
 
-    if(this.options.autoInit) {
+    if (this.options.autoInit) {
       this.init();
     }
 
@@ -133,7 +134,7 @@ export default class LazyView extends EventDispatcher {
 
 
   init() {
-    if(this.state.initialized){
+    if (this.state.initialized) {
       return;
     }
     this.state.initialized = true;
@@ -198,19 +199,19 @@ export default class LazyView extends EventDispatcher {
 
     if (this.offsetKeys) {
 
-      for(let i = 0, l = this.offsetKeys.length; i<l; i++) {
+      for (let i = 0, l = this.offsetKeys.length; i < l; i++) {
         var key = this.offsetKeys[i];
         var value = this.options.offsets[key];
 
         if (this.isInView(value)) {
           if (!this.offsetStates[key]) {
             this.offsetStates[key] = true;
-            this.dispatch('enter:' + key);
+            this.trigger('enter:' + key);
           }
         } else {
           if (this.offsetStates[key]) {
             this.offsetStates[key] = false;
-            this.dispatch('exit:' + key);
+            this.trigger('exit:' + key);
           }
         }
       }
@@ -226,28 +227,40 @@ export default class LazyView extends EventDispatcher {
     if (this.state.position === 'fixed') {
       return true;
     }
-    const scrollY = this.scroll.y;
-    return (scrollY <= (this.position.top - offset) && (scrollY + this.scroll.clientHeight >= this.position.bottom + offset))
+    // return (this.state.viewProgress > 0 && this.state.viewProgress < 1);
+
+    return (this.scroll.y <= (this.position.top - offset) && (this.scroll.y + this.scroll.clientHeight >= this.position.bottom + offset))
+  }
+
+
+  updateViewProgress(offset = 0) {
+    const posY = (this.position.bottom + offset + this.position.height) - this.scroll.y;
+    this.state.viewProgress = posY / (this.scroll.clientHeight + offset + this.position.height);
   }
 
   updateViewState() {
-    if (this.isInView(this.options.threshold)) {
-      if (!this.state.inView) {
 
+    this.updateViewProgress(this.options.threshold);
+
+    if (this.state.viewProgress >= 0 && this.state.viewProgress <= 1) {
+
+      this.trigger('scroll', { progress: this.state.viewProgress });
+
+      if (!this.state.inView) {
         this.setInview(true, !this.options.enterClass);
 
         if (this.options.init) {
           this.options.init.call(this);
         }
         if (!(this.state.firstRender && this.options.ignoreInitial)) {
-          this.dispatch(LazyView.ENTER);
+          this.trigger(LazyView.ENTER);
         }
       }
     } else {
       if (this.state.inView) {
         this.setInview(false, !this.options.enterClass);
         if (!(this.state.firstRender && this.options.ignoreInitial)) {
-          this.dispatch(LazyView.EXIT);
+          this.trigger(LazyView.EXIT);
         }
       }
     }

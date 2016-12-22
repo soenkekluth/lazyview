@@ -2,7 +2,7 @@
 .DS_Store
 *.sublime-workspace
 npm-debug.log
-
+/lib
 # Project folders to ignore
 node_modules
 .tern-port
