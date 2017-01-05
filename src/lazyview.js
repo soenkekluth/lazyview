@@ -1,6 +1,7 @@
 import EventDispatcher from 'eventdispatcher';
 import Scroll from 'scrollfeatures';
 import assign from 'object-assign';
+import classNames from 'classnames/dedupe';
 
 const isPlainObject = obj => Object.prototype.toString.call(obj) == '[object Object]';
 const isArray = arr => Object.prototype.toString.call(arr) === '[object Array]';
@@ -19,10 +20,10 @@ const defaults = {
 const getAbsolutBoundingRect = (el, fixedHeight) => {
   var rect = el.getBoundingClientRect();
   var height = fixedHeight || rect.height;
-  var top = rect.top + Scroll.windowY + height;
+  var top = rect.top + Scroll.windowY;
   return {
     top: top,
-    bottom: rect.bottom + Scroll.windowY - height,
+    bottom: rect.bottom + Scroll.windowY,
     height: height,
     width: rect.width,
     left: rect.left,
@@ -182,14 +183,9 @@ export default class LazyView extends EventDispatcher {
 
   render() {
     if (this.options.enterClass || this.options.exitClass) {
-      const directionY = this.scroll.directionY;
-      if (this.state.inView) {
-        !!this.options.enterClass && (this.el.classList.add(this.options.enterClass, directionY < 1 ? 'view-top' : 'view-bottom'));
-        !!this.options.exitClass && this.el.classList.remove(this.options.exitClass);
-      } else {
-        !!this.options.enterClass && this.el.classList.remove(this.options.enterClass, 'view-top', 'view-bottom');
-        !!this.options.exitClass && this.el.classList.add(this.options.exitClass, directionY < 1 ? 'view-top' : 'view-bottom');
-      }
+      // const directionY = this.scroll.directionY;
+      this.el.className = classNames(this.el.className, {
+        [this.options.enterClass]: this.state.inView, [this.options.exitClass]: !this.state.inView });
     }
   }
 
@@ -227,24 +223,22 @@ export default class LazyView extends EventDispatcher {
     if (this.state.position === 'fixed') {
       return true;
     }
-    // return (this.state.viewProgress > 0 && this.state.viewProgress < 1);
-
-    return (this.scroll.y <= (this.position.top - offset) && (this.scroll.y + this.scroll.clientHeight >= this.position.bottom + offset))
+    const progress = this.getProgress(offset);
+    return (progress >= 0 && progress <= 1);
+    // return (this.scroll.y <= (this.position.top - offset) && (this.scroll.y + this.scroll.clientHeight >= this.position.bottom + offset))
   }
 
 
-  updateViewProgress(offset = 0) {
-    const posY = (this.position.bottom + offset + this.position.height) - this.scroll.y;
-    this.state.viewProgress = posY / (this.scroll.clientHeight + offset + this.position.height);
+  getProgress(offset = 0) {
+    const posY = (this.position.top + offset + this.position.height) - this.scroll.y;
+    return 1 - (posY / (this.scroll.clientHeight + offset + this.position.height));
   }
 
   updateViewState() {
+    this.state.progress = this.getProgress(this.options.threshold);
+    if (this.state.progress >= 0 && this.state.progress <= 1) {
 
-    this.updateViewProgress(this.options.threshold);
-
-    if (this.state.viewProgress >= 0 && this.state.viewProgress <= 1) {
-
-      this.trigger('scroll', { progress: this.state.viewProgress });
+      this.trigger('scroll', { progress: this.state.progress });
 
       if (!this.state.inView) {
         this.setInview(true, !this.options.enterClass);
@@ -252,14 +246,15 @@ export default class LazyView extends EventDispatcher {
         if (this.options.init) {
           this.options.init.call(this);
         }
+
         if (!(this.state.firstRender && this.options.ignoreInitial)) {
-          this.trigger(LazyView.ENTER);
+        this.trigger(LazyView.ENTER);
         }
       }
     } else {
       if (this.state.inView) {
         this.setInview(false, !this.options.enterClass);
-        if (!(this.state.firstRender && this.options.ignoreInitial)) {
+        if (!(this.state.firstRender)) {
           this.trigger(LazyView.EXIT);
         }
       }
