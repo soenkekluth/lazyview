@@ -14,6 +14,8 @@ const defaults = {
   exitClass: '',
   init: null,
   threshold: 0,
+  children: false,
+  childrenClass: null,
   offsets: null // {myoffset:100}
 };
 
@@ -43,6 +45,8 @@ export default class LazyView extends EventDispatcher {
 
   static ENTER = 'enter';
   static EXIT = 'exit';
+  static ENTER_CHILD = 'enter:child';
+  static EXIT_CHILD = 'exit:child';
 
   static apply(elements, ...rest) {
 
@@ -106,12 +110,14 @@ export default class LazyView extends EventDispatcher {
       }
     }
 
+
     super({ target: el });
 
     this.el = el;
     this.tasks = tasks;
     this.options = assign({}, defaults, options);
     this.offsetStates = {};
+    this.children = [];
     this.offsetKeys = this.options.offsets ? Object.keys(this.options.offsets) : null;
 
     this.state = {
@@ -185,13 +191,35 @@ export default class LazyView extends EventDispatcher {
     if (this.options.enterClass || this.options.exitClass) {
       // const directionY = this.scroll.directionY;
       this.el.className = classNames(this.el.className, {
-        [this.options.enterClass]: this.state.inView, [this.options.exitClass]: !this.state.inView });
+        [this.options.enterClass]: this.state.inView,
+        [this.options.exitClass]: !this.state.inView
+      });
     }
   }
 
   onScroll() {
 
     this.updateViewState();
+
+    if (this.state.inView) {
+      if (this.children) {
+        for (let i = 0, l = this.children.length; i < l; i++) {
+          if (this.isInView(this.children[i].position.top)) {
+            if (!this.children[i].state.inView) {
+              this.children[i].state.inView = true;
+              // this.trigger('enter:child', {target:this.children[i].el});
+              this.trigger('enter:child', {target:this.children[i].el});
+              // this.children[i].el.classList.add('in-view');
+            }
+          } else {
+            if (this.children[i].state.inView) {
+              this.children[i].state.inView = false;
+              this.trigger('exit:child', {target:this.children[i].el});
+            }
+          }
+        }
+      }
+    }
 
     if (this.offsetKeys) {
 
@@ -228,6 +256,9 @@ export default class LazyView extends EventDispatcher {
     // return (this.scroll.y <= (this.position.top - offset) && (this.scroll.y + this.scroll.clientHeight >= this.position.bottom + offset))
   }
 
+  getInnerProgress() {
+    return ((this.position.top - this.scroll.clientHeight + this.scroll.y) / this.position.height);
+  }
 
   getProgress(offset = 0) {
     const posY = (this.position.top + offset + this.position.height) - this.scroll.y;
@@ -248,7 +279,7 @@ export default class LazyView extends EventDispatcher {
         }
 
         if (!(this.state.firstRender && this.options.ignoreInitial)) {
-        this.trigger(LazyView.ENTER);
+          this.trigger(LazyView.ENTER);
         }
       }
     } else {
@@ -265,6 +296,26 @@ export default class LazyView extends EventDispatcher {
 
   cachePosition() {
     this.position = getAbsolutBoundingRect(this.el);
+
+    if (this.options.children) {
+      this.children = [];
+      for (let i = 0, l = this.el.children.length; i < l; i++) {
+        if(!!this.options.childrenClass && this.el.children[i].className.indexOf(this.options.childrenClass) === -1){
+          continue;
+        }
+        // console.log('push ', this.options.childrenClass, this.el.children[i])
+        this.children.push({
+          el: this.el.children[i],
+          position: this.el.children[i].getBoundingClientRect(),
+          state: {
+            inView: false,
+          }
+        })
+
+      }
+    }
+    // this.children = this.el.children;
+    // console.log('children', this.children)
   }
 
   setInview(value, silent) {
@@ -316,18 +367,18 @@ class LazyViewCollection extends EventDispatcher {
     this.items.push(lazyView);
   }
 
-  addListener(event, listener) {
+  on(event, listener) {
     var i = -1;
     while (++i < this.items.length) {
-      this.items[i].addListener(event, listener);
+      this.items[i].on(event, listener);
     }
     return this;
   }
 
-  removeListener(event, listener) {
+  off(event, listener) {
     var i = -1;
     while (++i < this.items.length) {
-      this.items[i].removeListener(event, listener);
+      this.items[i].off(event, listener);
     }
     return this;
   }

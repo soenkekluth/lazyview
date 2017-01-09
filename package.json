@@ -1,6 +1,6 @@
 {
   "name": "lazyview",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "Initialize a View Component related to a dom element when it enters the viewport. Or Lazyload images for example",
   "main": "lib/lazyview.js",
   "scripts": {
@@ -40,7 +40,7 @@
     "babel-preset-stage-0": "^6.16.0",
     "cross-env": "^3.1.3",
     "mocha": "^3.2.0",
-    "npm-run-all": "^3.1.2",
+    "npm-run-all": "^4.0.0",
     "run-proxy": "^1.0.1",
     "should": "^11.1.2",
     "webpack": "^1.14.0",

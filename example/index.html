@@ -53,6 +53,14 @@
     opacity: 1;
   }
 
+  .test.in-view {
+    color: red;
+  }
+
+  .lazyview-child.in-view {
+    color: blue;
+  }
+
 
   </style>
 </head>
@@ -99,6 +107,26 @@
     <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Maiores, impedit eveniet, repellendus eligendi animi consequatur esse fuga tempora unde laboriosam laudantium officiis aliquam dolorum mollitia perferendis adipisci fugit non facilis.</div>
     <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eveniet quia, perferendis quaerat quis enim eius, temporibus laboriosam molestiae consequuntur labore quibusdam deleniti maxime sed tempora veritatis voluptatum, explicabo! Dignissimos, atque!</div>
     <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Natus tempora, optio ad incidunt a quam vitae nulla consectetur, non tenetur doloremque excepturi iste laboriosam sint est obcaecati harum porro eaque.</div>
+    <div class="lazyitem">
+      <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Maiores, impedit eveniet, repellendus eligendi animi consequatur esse fuga tempora unde laboriosam laudantium officiis aliquam dolorum mollitia perferendis adipisci fugit non facilis.</div>
+      <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Maiores, impedit eveniet, repellendus eligendi animi consequatur esse fuga tempora unde laboriosam laudantium officiis aliquam dolorum mollitia perferendis adipisci fugit non facilis.</div>
+      <div class="lazyview-child">
+        I AM THE CHILD
+      </div>
+      <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Maiores, impedit eveniet, repellendus eligendi animi consequatur esse fuga tempora unde laboriosam laudantium officiis aliquam dolorum mollitia perferendis adipisci fugit non facilis.</div>
+      <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Maiores, impedit eveniet, repellendus eligendi animi consequatur esse fuga tempora unde laboriosam laudantium officiis aliquam dolorum mollitia perferendis adipisci fugit non facilis.</div>
+      <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Maiores, impedit eveniet, repellendus eligendi animi consequatur esse fuga tempora unde laboriosam laudantium officiis aliquam dolorum mollitia perferendis adipisci fugit non facilis.</div>
+      <div class="lazyview-child">
+        I AM THE CHILD
+        <div class="lazyview-child">
+          I AM THE CHILD
+          <div class="lazyview-child">
+            I AM THE CHILD
+          </div>
+        </div>
+      </div>
+      <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Maiores, impedit eveniet, repellendus eligendi animi consequatur esse fuga tempora unde laboriosam laudantium officiis aliquam dolorum mollitia perferendis adipisci fugit non facilis.</div>
+    </div>
     <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Illo odio facere at facilis ipsam adipisci quos iste! Voluptates voluptatibus vero quae exercitationem ea, dicta nemo. Omnis voluptas molestiae temporibus nemo.</div>
     <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Possimus consequuntur nam ex delectus reprehenderit voluptas quos magni. Cumque quaerat ea quod temporibus, quia quae? Architecto temporibus beatae, est deserunt minus!</div>
     <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nisi omnis magnam, iusto cum accusamus explicabo soluta, ea minima minus tenetur, necessitatibus atque repudiandae voluptatem totam dolor odit deserunt rerum maiores!</div>
@@ -165,18 +193,18 @@
   }
 
 
-  new LazyView(document.querySelectorAll('.lazyview, .lazyitem'), [ LazyInitTask({onStart:onStart, onComplete:onComplete}), LazyLoadTask({ completeClass: 'is-loaded', loadClass: 'is-loading', threshold:-400})], {
+  var lazyView = new LazyView(document.querySelectorAll('.lazyview, .lazyitem'), {
     // init: init,
-    threshold: 0,
+    children: true,
+    childrenClass: 'lazyview-child',
     //offsets: {'50px' :-50, '200px' :-200},
     enterClass: 'in-view'
-   })
-  //   .on('enter', function(e) {
-  //     console.log('enter')
-  //   })
-  //  .on('exit', function(e) {
-  //     console.log('enter')
-  //   })
+   });
+
+  lazyView.on('enter:child', function(e) {
+    console.log('enter ############################### >', e)
+  })
+
 
   </script>
 </body>

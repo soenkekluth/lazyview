@@ -24,6 +24,7 @@ module.exports = [{
     new webpack.BannerPlugin(banner)
   ],
   devServer: {
+    'stats': 'errors-only',
     contentBase: "./",
   }
 },{
