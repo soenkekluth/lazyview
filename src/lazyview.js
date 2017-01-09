@@ -14,8 +14,8 @@ const defaults = {
   exitClass: '',
   init: null,
   threshold: 0,
-  children: false,
-  childrenClass: null,
+  children: [],
+  childrenSelectors: [],
   offsets: null // {myoffset:100}
 };
 
@@ -32,6 +32,14 @@ const getAbsolutBoundingRect = (el, fixedHeight) => {
     right: rect.right
   };
 };
+
+
+const nullPosition = {
+  top: 0,
+  bottom: 0,
+  height: 0,
+  width: 0
+}
 
 const getPositionStyle = (el) => {
   if (typeof window !== 'undefined') {
@@ -118,13 +126,14 @@ export default class LazyView extends EventDispatcher {
     this.options = assign({}, defaults, options);
     this.offsetStates = {};
     this.children = [];
+    this.lastChildrenQuery = null;
     this.offsetKeys = this.options.offsets ? Object.keys(this.options.offsets) : null;
 
     this.state = {
       firstRender: true,
       initialized: false,
       inView: false,
-      viewProgress: 0,
+      progress: 0,
       position: getPositionStyle(this.el)
     };
 
@@ -187,6 +196,22 @@ export default class LazyView extends EventDispatcher {
     }
   }
 
+  addChild(element) {
+    this.options.children = this.options.children || [];
+    if (this.options.children.indexOf(element) === -1) {
+      this.options.children.push(element);
+    }
+  }
+
+  removeChild(element) {
+    if (!!this.options.children) {
+      const index = this.options.children.indexOf(element);
+      if (index > -1) {
+        this.options.children.splice(index, 1);
+      }
+    }
+  }
+
   render() {
     if (this.options.enterClass || this.options.exitClass) {
       // const directionY = this.scroll.directionY;
@@ -202,19 +227,19 @@ export default class LazyView extends EventDispatcher {
     this.updateViewState();
 
     if (this.state.inView) {
-      if (this.children) {
+      if (this.children.length) {
         for (let i = 0, l = this.children.length; i < l; i++) {
-          if (this.isInView(this.children[i].position.top)) {
+
+          if (this.isInView(this.children[i].position)) {
             if (!this.children[i].state.inView) {
               this.children[i].state.inView = true;
-              // this.trigger('enter:child', {target:this.children[i].el});
-              this.trigger('enter:child', {target:this.children[i].el});
-              // this.children[i].el.classList.add('in-view');
+              this.trigger('enter:child', { target: this.children[i].el });
             }
           } else {
+
             if (this.children[i].state.inView) {
               this.children[i].state.inView = false;
-              this.trigger('exit:child', {target:this.children[i].el});
+              this.trigger('exit:child', { target: this.children[i].el });
             }
           }
         }
@@ -244,29 +269,34 @@ export default class LazyView extends EventDispatcher {
 
   update() {
     this.cachePosition();
-    this.onScroll();
+    if(this.state.firstRender){
+      setTimeout(()=>{
+        this.onScroll();
+      }, 0);
+    }else{
+      this.onScroll();
+    }
   }
 
-  isInView(offset = 0) {
+  isInView(offsetPosition = nullPosition) {
     if (this.state.position === 'fixed') {
       return true;
     }
-    const progress = this.getProgress(offset);
+    const progress = this.getProgress(offsetPosition);
     return (progress >= 0 && progress <= 1);
-    // return (this.scroll.y <= (this.position.top - offset) && (this.scroll.y + this.scroll.clientHeight >= this.position.bottom + offset))
   }
 
   getInnerProgress() {
     return ((this.position.top - this.scroll.clientHeight + this.scroll.y) / this.position.height);
   }
 
-  getProgress(offset = 0) {
-    const posY = (this.position.top + offset + this.position.height) - this.scroll.y;
-    return 1 - (posY / (this.scroll.clientHeight + offset + this.position.height));
+  getProgress(offsetPosition = nullPosition) {
+    const posY = (this.position.top - this.scroll.clientHeight + offsetPosition.top);
+    return (this.scroll.y - posY) / (this.scroll.clientHeight + this.position.height + offsetPosition.height)
   }
 
   updateViewState() {
-    this.state.progress = this.getProgress(this.options.threshold);
+    this.state.progress = this.getProgress(nullPosition);
     if (this.state.progress >= 0 && this.state.progress <= 1) {
 
       this.trigger('scroll', { progress: this.state.progress });
@@ -278,9 +308,9 @@ export default class LazyView extends EventDispatcher {
           this.options.init.call(this);
         }
 
-        if (!(this.state.firstRender && this.options.ignoreInitial)) {
+        // if (!(this.state.firstRender && this.options.ignoreInitial)) {
           this.trigger(LazyView.ENTER);
-        }
+        // }
       }
     } else {
       if (this.state.inView) {
@@ -297,23 +327,51 @@ export default class LazyView extends EventDispatcher {
   cachePosition() {
     this.position = getAbsolutBoundingRect(this.el);
 
-    if (this.options.children) {
-      this.children = [];
-      for (let i = 0, l = this.el.children.length; i < l; i++) {
-        if(!!this.options.childrenClass && this.el.children[i].className.indexOf(this.options.childrenClass) === -1){
-          continue;
-        }
-        // console.log('push ', this.options.childrenClass, this.el.children[i])
-        this.children.push({
-          el: this.el.children[i],
-          position: this.el.children[i].getBoundingClientRect(),
-          state: {
-            inView: false,
-          }
-        })
+    if (this.children.length) {
+      for (let i = 0, l = this.children.length; i < l; i++) {
+        let rect = getAbsolutBoundingRect(this.children[i].el);
+        rect.top -= this.position.top;
+        rect.bottom -= this.position.top;
+        this.children[i].position = rect;
+      }
+      return;
+    }
+
+    var selectedChildren = [];
+    this.children = [];
+
+    if (!!this.options.childrenSelectors && this.options.childrenSelectors.length) {
+      const query = this.options.childrenSelectors.join(', ');
+      if (query !== this.lastChildrenQuery) {
+        this.lastChildrenQuery = query;
+        selectedChildren = this.el.querySelectorAll(this.options.childrenSelectors.join(', '));
 
       }
     }
+    if (!!this.options.children && this.options.children.length) {
+      selectedChildren = this.options.children;
+    }
+
+    if (selectedChildren) {
+
+      for (let i = 0, l = selectedChildren.length; i < l; i++) {
+        let rect = getAbsolutBoundingRect(selectedChildren[i]);
+        rect.top -= this.position.top;
+        rect.bottom -= this.position.top;
+
+        this.children.push({
+            el: selectedChildren[i],
+            position: rect,
+            state: {
+              inView: false,
+            }
+          })
+          // }else{
+          //   this.children[i].position = getAbsolutBoundingRect(this.children[i].el),
+          // }
+      }
+    }
+
     // this.children = this.el.children;
     // console.log('children', this.children)
   }
