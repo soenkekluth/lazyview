@@ -251,33 +251,30 @@
     console.log('onComplete')
     return true;
   }
-
-
-   /*var lazyView = new LazyView(document.querySelectorAll('.lazyview, .lazyitem'), {*/
-
-    var element = document.querySelector('.lazyitem.with-children');
+    /*var element = document.querySelector('.lazyitem.with-children');*/
+    var element = document.querySelectorAll('.lazyview, .lazyitem');
     var lazyView = new LazyView(element, {
 
     // init: init,
-    children: element.querySelectorAll('.lazyview-child'),
-    // childrenSelectors: ['.lazyview-child'],
+    // children: element.querySelectorAll('.lazyview-child'),
+    childrenSelectors: ['.lazyview-child'],
     //offsets: {'50px' :-50, '200px' :-200},
     enterClass: 'in-view'
    });
 
-  lazyView.on('enter', function(e) {
+  /*lazyView.on('enter', function(e) {
     console.log('on enter enter ############################### >', e)
   });
   lazyView.on('exit', function(e) {
     console.log('on exit exit ############################### >', e)
-  });
+  });*/
   lazyView.on('enter:child', function(e) {
-    console.log('enter ############################### >', e)
+
     e.target.classList.add('in-view');
   });
 
   lazyView.on('exit:child', function(e) {
-    console.log('exit ############################### >', e)
+
     e.target.classList.remove('in-view');
   })
 

@@ -10,12 +10,12 @@ const isLazyTaskCreator = obj => obj && obj.hasOwnProperty('creator');
 const defaults = {
   autoInit: true,
   ignoreInitial: false,
-  enterClass: '',
-  exitClass: '',
+  enterClass: null,
+  exitClass: null,
   init: null,
   threshold: 0,
-  children: [],
-  childrenSelectors: [],
+  children: null,
+  childrenSelectors: null,
   offsets: null // {myoffset:100}
 };
 
@@ -213,13 +213,21 @@ export default class LazyView extends EventDispatcher {
   }
 
   render() {
-    if (this.options.enterClass || this.options.exitClass) {
-      // const directionY = this.scroll.directionY;
-      this.el.className = classNames(this.el.className, {
-        [this.options.enterClass]: this.state.inView,
-        [this.options.exitClass]: !this.state.inView
-      });
+    if(this.options.enterClass){
+      // if(this.state.inView && this.el.className.indexOf(this.options.enterClass)){
+      //   this.el.className = this.el.className.split(this.options.enterClass).join('');
+      // }else{
+      //   this.el.className += ' '+this.options.enterClass;
+      // }
+      this.el.className = classNames(this.el.className, {[this.options.enterClass]: this.state.inView});
     }
+    // if (this.options.enterClass || this.options.exitClass) {
+    //   // const directionY = this.scroll.directionY;
+    //   this.el.className = classNames(this.el.className, {
+    //     [this.options.enterClass]: this.state.inView,
+    //     [this.options.exitClass]: !this.state.inView
+    //   });
+    // }
   }
 
   onScroll() {
@@ -244,23 +252,24 @@ export default class LazyView extends EventDispatcher {
           }
         }
       }
-    }
 
-    if (this.offsetKeys) {
 
-      for (let i = 0, l = this.offsetKeys.length; i < l; i++) {
-        var key = this.offsetKeys[i];
-        var value = this.options.offsets[key];
+      if (this.offsetKeys) {
 
-        if (this.isInView(value)) {
-          if (!this.offsetStates[key]) {
-            this.offsetStates[key] = true;
-            this.trigger('enter:' + key);
-          }
-        } else {
-          if (this.offsetStates[key]) {
-            this.offsetStates[key] = false;
-            this.trigger('exit:' + key);
+        for (let i = 0, l = this.offsetKeys.length; i < l; i++) {
+          var key = this.offsetKeys[i];
+          var value = this.options.offsets[key];
+
+          if (this.isInView(value)) {
+            if (!this.offsetStates[key]) {
+              this.offsetStates[key] = true;
+              this.trigger('enter:' + key);
+            }
+          } else {
+            if (this.offsetStates[key]) {
+              this.offsetStates[key] = false;
+              this.trigger('exit:' + key);
+            }
           }
         }
       }
@@ -269,11 +278,11 @@ export default class LazyView extends EventDispatcher {
 
   update() {
     this.cachePosition();
-    if(this.state.firstRender){
-      setTimeout(()=>{
+    if (this.state.firstRender) {
+      setTimeout(() => {
         this.onScroll();
       }, 0);
-    }else{
+    } else {
       this.onScroll();
     }
   }
@@ -292,7 +301,7 @@ export default class LazyView extends EventDispatcher {
 
   getProgress(offsetPosition = nullPosition) {
     const posY = (this.position.top - this.scroll.clientHeight + offsetPosition.top);
-    return (this.scroll.y - posY) / (this.scroll.clientHeight + this.position.height + offsetPosition.height)
+    return (this.scroll.y - posY) / (this.scroll.clientHeight + this.position.height + offsetPosition.height);
   }
 
   updateViewState() {
@@ -302,19 +311,19 @@ export default class LazyView extends EventDispatcher {
       this.trigger('scroll', { progress: this.state.progress });
 
       if (!this.state.inView) {
-        this.setInview(true, !this.options.enterClass);
+        this.setInview(true, (this.options.enterClass === null));
 
         if (this.options.init) {
           this.options.init.call(this);
         }
 
         // if (!(this.state.firstRender && this.options.ignoreInitial)) {
-          this.trigger(LazyView.ENTER);
+        this.trigger(LazyView.ENTER);
         // }
       }
     } else {
       if (this.state.inView) {
-        this.setInview(false, !this.options.enterClass);
+        this.setInview(false, (this.options.enterClass === null));
         if (!(this.state.firstRender)) {
           this.trigger(LazyView.EXIT);
         }
@@ -327,7 +336,7 @@ export default class LazyView extends EventDispatcher {
   cachePosition() {
     this.position = getAbsolutBoundingRect(this.el);
 
-    if (this.children.length) {
+    if (!!this.children && this.children.length) {
       for (let i = 0, l = this.children.length; i < l; i++) {
         let rect = getAbsolutBoundingRect(this.children[i].el);
         rect.top -= this.position.top;
@@ -347,8 +356,7 @@ export default class LazyView extends EventDispatcher {
         selectedChildren = this.el.querySelectorAll(this.options.childrenSelectors.join(', '));
 
       }
-    }
-    if (!!this.options.children && this.options.children.length) {
+    } else if (!!this.options.children && this.options.children.length) {
       selectedChildren = this.options.children;
     }
 
@@ -365,15 +373,9 @@ export default class LazyView extends EventDispatcher {
             state: {
               inView: false,
             }
-          })
-          // }else{
-          //   this.children[i].position = getAbsolutBoundingRect(this.children[i].el),
-          // }
+          });
       }
     }
-
-    // this.children = this.el.children;
-    // console.log('children', this.children)
   }
 
   setInview(value, silent) {
