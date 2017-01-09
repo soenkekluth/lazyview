@@ -159,7 +159,7 @@
     <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Maiores, impedit eveniet, repellendus eligendi animi consequatur esse fuga tempora unde laboriosam laudantium officiis aliquam dolorum mollitia perferendis adipisci fugit non facilis.</div>
     <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eveniet quia, perferendis quaerat quis enim eius, temporibus laboriosam molestiae consequuntur labore quibusdam deleniti maxime sed tempora veritatis voluptatum, explicabo! Dignissimos, atque!</div>
     <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Natus tempora, optio ad incidunt a quam vitae nulla consectetur, non tenetur doloremque excepturi iste laboriosam sint est obcaecati harum porro eaque.</div>
-    <div class="lazyitem with-children" style="border: 1px solid red;">
+    <div class="lazyitem with-children" style="border: 1px solid red;" id="lala-parent">
       <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Maiores, impedit eveniet, repellendus eligendi animi consequatur esse fuga tempora unde laboriosam laudantium officiis aliquam dolorum mollitia perferendis adipisci fugit non facilis.</div>
       <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Maiores, impedit eveniet, repellendus eligendi animi consequatur esse fuga tempora unde laboriosam laudantium officiis aliquam dolorum mollitia perferendis adipisci fugit non facilis.</div>
       <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Maiores, impedit eveniet, repellendus eligendi animi consequatur esse fuga tempora unde laboriosam laudantium officiis aliquam dolorum mollitia perferendis adipisci fugit non facilis.</div>
@@ -170,18 +170,18 @@
       <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Maiores, impedit eveniet, repellendus eligendi animi consequatur esse fuga tempora unde laboriosam laudantium officiis aliquam dolorum mollitia perferendis adipisci fugit non facilis.</div>
       <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Maiores, impedit eveniet, repellendus eligendi animi consequatur esse fuga tempora unde laboriosam laudantium officiis aliquam dolorum mollitia perferendis adipisci fugit non facilis.</div>
       <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Maiores, impedit eveniet, repellendus eligendi animi consequatur esse fuga tempora unde laboriosam laudantium officiis aliquam dolorum mollitia perferendis adipisci fugit non facilis.</div>
-      <div class="lazyview-child">
-        I AM THE CHILD
+      <div class="lazyview-child" id="lala0">
+        ich bin das erste
       </div>
       <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Maiores, impedit eveniet, repellendus eligendi animi consequatur esse fuga tempora unde laboriosam laudantium officiis aliquam dolorum mollitia perferendis adipisci fugit non facilis.</div>
       <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Maiores, impedit eveniet, repellendus eligendi animi consequatur esse fuga tempora unde laboriosam laudantium officiis aliquam dolorum mollitia perferendis adipisci fugit non facilis.</div>
       <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Maiores, impedit eveniet, repellendus eligendi animi consequatur esse fuga tempora unde laboriosam laudantium officiis aliquam dolorum mollitia perferendis adipisci fugit non facilis.</div>
-      <div class="lazyview-child">
-        I AM THE CHILD
-        <div class="lazyview-child">
-          I AM THE CHILD
-          <div class="lazyview-child">
-            I AM THE CHILD
+      <div class="lazyview-child" id="lala1">
+        das zweite
+        <div class="lazyview-child" id="lala2">
+          das dritte
+          <div class="lazyview-child" id="lala3">
+            und das vierte
           </div>
         </div>
       </div>
@@ -251,30 +251,30 @@
     console.log('onComplete')
     return true;
   }
-    /*var element = document.querySelector('.lazyitem.with-children');*/
-    var element = document.querySelectorAll('.lazyview, .lazyitem');
+    var element = document.querySelector('.lazyitem.with-children');
+    /*var element = document.querySelectorAll('.lazyview, .lazyitem');*/
     var lazyView = new LazyView(element, {
 
     // init: init,
     // children: element.querySelectorAll('.lazyview-child'),
-    childrenSelectors: ['.lazyview-child'],
+    childSelectors: ['.lazyview-child'],
     //offsets: {'50px' :-50, '200px' :-200},
     enterClass: 'in-view'
    });
 
-  /*lazyView.on('enter', function(e) {
-    console.log('on enter enter ############################### >', e)
+  lazyView.on('enter', function(e) {
+    // console.log('on enter enter ############################### >', e)
   });
   lazyView.on('exit', function(e) {
-    console.log('on exit exit ############################### >', e)
-  });*/
+    // console.log('on exit exit ############################### >', e)
+  });
   lazyView.on('enter:child', function(e) {
-
+    console.log('enter:child ############################### >', e.target.id)
     e.target.classList.add('in-view');
   });
 
   lazyView.on('exit:child', function(e) {
-
+    console.log('exit:child ############################### >', e.target.id)
     e.target.classList.remove('in-view');
   })
 
