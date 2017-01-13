@@ -127,6 +127,7 @@ export default class LazyView extends EventDispatcher {
     this.offsetStates = {};
     this.children = [];
     this.lastChildrenQuery = null;
+    nullPosition.top = this.options.threshold;
     this.offsetKeys = this.options.offsets ? Object.keys(this.options.offsets) : null;
 
     this.state = {

@@ -251,10 +251,9 @@
     console.log('onComplete')
     return true;
   }
-    var element = document.querySelector('.lazyitem.with-children');
-    /*var element = document.querySelectorAll('.lazyview, .lazyitem');*/
+    var element = document.querySelectorAll('.lazyview, .lazyitem');
     var lazyView = new LazyView(element, {
-
+      threshold: 0,
     // init: init,
     // children: element.querySelectorAll('.lazyview-child'),
     childSelectors: ['.lazyview-child'],
