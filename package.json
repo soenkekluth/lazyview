@@ -1,6 +1,6 @@
 {
   "name": "lazyview",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Initialize a View Component related to a dom element when it enters the viewport. Or Lazyload images for example",
   "main": "lib/lazyview.js",
   "module": "es/lazyview.js",
@@ -40,7 +40,7 @@
   "homepage": "https://github.com/soenkekluth/lazyview#readme",
   "devDependencies": {
     "babel-cli": "^6.24.0",
-    "babel-core": "^6.21.0",
+    "babel-core": "^6.24.0",
     "babel-loader": "^6.4.1",
     "babel-plugin-add-module-exports": "^0.2.1",
     "babel-plugin-transform-class-properties": "^6.23.0",
@@ -61,7 +61,7 @@
   "dependencies": {
     "babel-runtime": ">=6.20.0",
     "classnames": ">=2.2.5",
-    "eventdispatcher": ">=2.5.1",
+    "eventdispatcher": ">=2.6.0",
     "lodash.debounce": ">=4.0.8",
     "object-assign": ">=4.1.1",
     "scrollfeatures": ">=1.5.2"
