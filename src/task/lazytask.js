@@ -2,7 +2,8 @@ import assign from 'object-assign';
 
 export default class LazyTask {
 
-  static defaults = {
+  static defaultProps = {
+    name: 'lazytask',
     once: false,
     completeClass: null,
     initClass: null,
@@ -13,10 +14,10 @@ export default class LazyTask {
     onExit: null
   }
 
-  constructor(lazyView, options, name = 'lazytask') {
+  constructor(lazyView, props) {
     this.lazyView = lazyView;
     this.name = name;
-    this.options = assign({}, LazyTask.defaults, options);
+    this.props = assign({}, LazyTask.defaultProps, props);
     this.onEnter = this.onEnter.bind(this);
     this.onExit = this.onExit.bind(this);
     this.init();
@@ -25,7 +26,7 @@ export default class LazyTask {
 
   destroy() {
     this.lazyView.removeOffset(this.name);
-    this.options = null;
+    this.props = null;
     this.onEnter = null;
     this.onExit = null;
     this.lazyView = null;
@@ -35,8 +36,8 @@ export default class LazyTask {
   init() {
     this.lazyView.one('enter', this.onEnter);
     this.lazyView.one('exit', this.onExit);
-    if (this.options.threshold) {
-      this.lazyView.addOffset(this.name, this.options.threshold);
+    if (this.props.threshold) {
+      this.lazyView.addOffset(this.name, this.props.threshold);
       this.lazyView.one('enter:' + this.name, this.onEnter);
       this.lazyView.one('exit:' + this.name, this.onExit);
     } else {
@@ -66,8 +67,8 @@ export default class LazyTask {
     var result =
       this.onStart(this.lazyView)
       .then(arg => {
-        if (this.options && this.options.onStart) {
-          var res = this.options.onStart.call(this, this.lazyView);
+        if (this.props && this.props.onStart) {
+          var res = this.props.onStart.call(this, this.lazyView);
           if (res.then) {
             return res;
           }
@@ -77,8 +78,8 @@ export default class LazyTask {
       .then(arg => this.onComplete(arg))
       .then(arg => this.onAfterComplete(arg))
       .then(arg => {
-        if (this.options && this.options.onComplete) {
-          var res = this.options.onComplete.call(this, this.lazyView);
+        if (this.props && this.props.onComplete) {
+          var res = this.props.onComplete.call(this, this.lazyView);
           if (res.then) {
             return res;
           }
@@ -94,8 +95,8 @@ export default class LazyTask {
     var result =
       this.onStop(lazyView)
       .then(arg => {
-        if (this.options && this.options.onStop) {
-          var res = this.options.onStop.call(this, lazyView);
+        if (this.props && this.props.onStop) {
+          var res = this.props.onStop.call(this, lazyView);
           if (res.then) {
             return res;
           }

@@ -1,12 +1,19 @@
 import TaskCreator from '../task/taskcreator';
 import LazyTask from '../task/lazytask';
+import assign from 'object-assign';
 
-class LazyLoadTask extends LazyTask {
+class LazyLoad extends LazyTask {
 
-  constructor(lazyView, options, name) {
-    options = options || {};
-    options.once = true;
-    super(lazyView, options, 'lazyload');
+  static defaultProps = {
+    selector: 'img',
+    once: true,
+    name: 'lazyload',
+  }
+
+
+  constructor(lazyView, props) {
+    props = assign({}, LazyLoad.defaultProps, props);
+    super(lazyView, props);
   }
 
   getLazyItem(el) {
@@ -42,7 +49,7 @@ class LazyLoadTask extends LazyTask {
     if (this.getLazyItem(el)) {
       this.mediaToLoad.push(el);
     } else {
-      var elems = el.querySelectorAll('img');
+      var elems = el.querySelectorAll(this.props.selector);
       for (let i = 0, l = elems.length; i < l; i++) {
         var elem = elems[i];
         if (this.getLazyItem(elem)) {
@@ -77,19 +84,19 @@ class LazyLoadTask extends LazyTask {
     el.removeEventListener('load', this.onLoad);
     el.removeEventListener('error', this.onLoad);
 
-    if (this.options.loadClass) {
-      el.classList.remove(this.options.loadClass);
+    if (this.props.loadClass) {
+      el.classList.remove(this.props.loadClass);
     }
 
-    if (this.options.completeClass) {
-      el.classList.add(this.options.completeClass);
+    if (this.props.completeClass) {
+      el.classList.add(this.props.completeClass);
     }
 
     if (this.loadCount === 0) {
 
       this.loadResolver(this.lazyView);
 
-      if (this.options.once) {
+      if (this.props.once) {
         this.destroy();
       }
     }
@@ -101,9 +108,9 @@ class LazyLoadTask extends LazyTask {
     return new Promise((resolve, reject) => {
 
       this.loadResolver = resolve;
-      if(!this.mediaToLoad.length){
+      if (!this.mediaToLoad.length) {
         this.loadResolver(this.lazyView);
-        if (this.options.once) {
+        if (this.props.once) {
           this.destroy();
         }
         return;
@@ -131,8 +138,8 @@ class LazyLoadTask extends LazyTask {
           el.addEventListener('load', this.onLoad);
           el.addEventListener('error', this.onLoad);
 
-          if (this.options.loadClass) {
-            el.classList.add(this.options.loadClass);
+          if (this.props.loadClass) {
+            el.classList.add(this.props.loadClass);
           }
 
           el.removeAttribute('data-src');
@@ -146,6 +153,6 @@ class LazyLoadTask extends LazyTask {
   }
 }
 
-module.exports = options => {
-  return new TaskCreator(LazyLoadTask, options);
+module.exports = props => {
+  return new TaskCreator(LazyLoad, props);
 };

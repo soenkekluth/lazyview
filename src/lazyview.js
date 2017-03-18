@@ -9,17 +9,6 @@ const isPlainObject = obj => Object.prototype.toString.call(obj) == '[object Obj
 const isArray = arr => Object.prototype.toString.call(arr) === '[object Array]';
 const isTaskCreator = obj => obj && obj.hasOwnProperty('creator');
 
-const defaults = {
-  autoInit: true,
-  ignoreInitial: false,
-  enterClass: null,
-  exitClass: null,
-  init: null,
-  threshold: 0,
-  children: null,
-  childSelectors: null,
-  offsets: null // {myoffset:100}
-};
 
 const getAbsolutBoundingRect = (el, fixedHeight) => {
   var rect = el.getBoundingClientRect();
@@ -53,6 +42,20 @@ const getPositionStyle = (el) => {
 
 export default class LazyView extends EventDispatcher {
 
+
+  static defaultProps = {
+    autoInit: true,
+    ignoreInitial: false,
+    enterClass: null,
+    exitClass: null,
+    init: null,
+    threshold: 0,
+    children: false,
+    offsets: null // {myoffset:100}
+  };
+
+
+
   static ENTER = 'enter';
   static EXIT = 'exit';
   static ENTER_CHILD = 'enter:child';
@@ -68,7 +71,7 @@ export default class LazyView extends EventDispatcher {
       return collection;
     }
 
-    return new LazyView(elements, assign({}, options), tasks);
+    return new LazyView(elements, assign({}, props), tasks);
   }
 
   constructor(...args) {
@@ -84,7 +87,7 @@ export default class LazyView extends EventDispatcher {
     }
 
     let el = (args[0].tagName !== undefined) ? args[0] : null;
-    let options = {};
+    let props = {};
     let tasks = [];
 
     if (args.length === 2) {
@@ -95,7 +98,7 @@ export default class LazyView extends EventDispatcher {
         } else if (isArray(args[1])) {
           tasks.concat(args[1]);
         } else if (isPlainObject(args[1])) {
-          options = args[1];
+          props = args[1];
         }
       }
     } else if (args.length === 3) {
@@ -106,7 +109,7 @@ export default class LazyView extends EventDispatcher {
         } else if (isArray(args[1])) {
           tasks = tasks.concat(args[1]);
         } else if (isPlainObject(args[1])) {
-          options = args[1];
+          props = args[1];
         }
       }
       if (typeof args[2] !== 'undefined') {
@@ -115,7 +118,7 @@ export default class LazyView extends EventDispatcher {
         } else if (isArray(args[2])) {
           tasks = tasks.concat(args[2]);
         } else if (isPlainObject(args[2])) {
-          options = args[2];
+          props = args[2];
         }
       }
     }
@@ -125,12 +128,14 @@ export default class LazyView extends EventDispatcher {
 
     this.el = el;
     this.tasks = tasks;
-    this.options = assign({}, defaults, options);
+    this.props = assign({}, LazyView.defaultProps, props);
     this.offsetStates = {};
     this.children = [];
     this.lastChildrenQuery = null;
-    nullPosition.top = this.options.threshold;
-    this.offsetKeys = this.options.offsets ? Object.keys(this.options.offsets) : null;
+    this.watchChild = this.watchChild.bind(this);
+    this.unwatchChild = this.unwatchChild.bind(this);
+    nullPosition.top = this.props.threshold;
+    this.offsetKeys = this.props.offsets ? Object.keys(this.props.offsets) : null;
 
     this.state = {
       firstRender: true,
@@ -140,7 +145,7 @@ export default class LazyView extends EventDispatcher {
       position: getPositionStyle(this.el)
     };
 
-    if (this.options.autoInit) {
+    if (this.props.autoInit) {
       this.init();
     }
 
@@ -179,49 +184,82 @@ export default class LazyView extends EventDispatcher {
 
     if (typeof window !== 'undefined') {
       window.addEventListener('orientationchange', this.onResize, false);
-      window.addEventListener('load', this.onResize,{capture: false, once: true});
+      window.addEventListener('load', this.onResize, { capture: false, once: true });
       if (document.readyState !== 'complete') {
-        document.addEventListener("DOMContentLoaded", this.onResize, {capture: false, once: true});
+        document.addEventListener("DOMContentLoaded", this.onResize, { capture: false, once: true });
       }
     }
 
+    this.watchChildren();
     this.update();
   }
 
 
   addOffset(name, value) {
-    this.options.offsets = this.options.offsets || {};
-    this.options.offsets[name] = value;
-    this.offsetKeys = Object.keys(this.options.offsets);
+    this.props.offsets = this.props.offsets || {};
+    this.props.offsets[name] = value;
+    this.offsetKeys = Object.keys(this.props.offsets);
   }
 
   removeOffset(name) {
-    if (this.options.offsets && this.options.offsets.hasOwnProperty(name)) {
-      delete this.options.offsets[name];
-      this.offsetKeys = Object.keys(this.options.offsets);
+    if (this.props.offsets && this.props.offsets.hasOwnProperty(name)) {
+      delete this.props.offsets[name];
+      this.offsetKeys = Object.keys(this.props.offsets);
     }
   }
 
-  addChild(element) {
-    this.options.children = this.options.children || [];
-    if (this.options.children.indexOf(element) === -1) {
-      this.options.children.push(element);
-    }
-  }
+  watchChildren() {
 
-  removeChild(element) {
-    if (this.options.children && this.options.children.length) {
-      const index = this.options.children.indexOf(element);
-      if (index > -1) {
-        this.options.children.splice(index, 1);
+    if (!this.props.children) {
+      return;
+    }
+
+    let children = [];
+
+    if (typeof this.props.children === 'string') {
+      children = this.el.querySelectorAll(this.props.children);
+    } else if (isArray(this.props.children)) {
+      for (let i = 0, l = this.props.children.length; i < l; i++) {
+        const entry = this.props.children[i];
+        if (typeof entry === 'string') {
+          children = children.concat(Array.prototype.slice.call(this.el.querySelectorAll(entry)));
+        } else if (entry.tagName) {
+          children.push(entry);
+        }
       }
+    }
+
+    Array.prototype.forEach.call(children, this.watchChild);
+  }
+
+  watchChild(domNode) {
+
+    const hasChild = this.children.find(child => child.el === domNode);
+    if (!hasChild) {
+      let rect = getAbsolutBoundingRect(domNode);
+
+      this.children.push({
+        el: domNode,
+        position: rect,
+        state: {
+          inView: false,
+        }
+      });
+      this.watching = true;
+    }
+  }
+
+  unwatchChild(domNode) {
+    this.children = this.children.filter(child => (!child.el || child.el !== domNode));
+    if (!this.children.length) {
+      this.watching = false;
     }
   }
 
   render() {
-    if (this.options.enterClass) {
+    if (this.props.enterClass) {
       this.el.className = classNames(this.el.className, {
-        [this.options.enterClass]: this.state.inView
+        [this.props.enterClass]: this.state.inView
       });
     }
   }
@@ -237,29 +275,27 @@ export default class LazyView extends EventDispatcher {
 
     this.updateViewState();
 
-    if (this.state.inView) {
-      if (this.children.length) {
-        for (let i = 0, l = this.children.length; i < l; i++) {
-          if (this.isInView(this.children[i].position)) {
-            if (!this.children[i].state.inView) {
-              this.children[i].state.inView = true;
-              this.trigger('enter:child', { target: this.children[i].el });
-            }
-          } else {
-            if (this.children[i].state.inView) {
-              this.children[i].state.inView = false;
-              this.trigger('exit:child', { target: this.children[i].el });
-            }
+    if (this.state.inView && this.watching) {
+
+      for (let i = 0, l = this.children.length; i < l; i++) {
+        if (this.isInView(this.children[i].position)) {
+          if (!this.children[i].state.inView) {
+            this.children[i].state.inView = true;
+            this.trigger('enter:child', { target: this.children[i].el });
+          }
+        } else {
+          if (this.children[i].state.inView) {
+            this.children[i].state.inView = false;
+            this.trigger('exit:child', { target: this.children[i].el });
           }
         }
       }
-
 
       /*if (false || this.offsetKeys) {
 
         for (let i = 0, l = this.offsetKeys.length; i < l; i++) {
           var key = this.offsetKeys[i];
-          var value = this.options.offsets[key];
+          var value = this.props.offsets[key];
 
           if (this.isInView(value)) {
             if (!this.offsetStates[key]) {
@@ -289,9 +325,6 @@ export default class LazyView extends EventDispatcher {
   }
 
   isInView(position, offsetPosition = nullPosition) {
-    // if (position === 'fixed') {
-    //   return true;
-    // }
     const progress = this.getProgress(position, offsetPosition);
     return (progress >= 0 && progress <= 1);
   }
@@ -308,26 +341,23 @@ export default class LazyView extends EventDispatcher {
   updateViewState() {
 
     this.state.progress = this.getProgress(this.position, nullPosition);
-    // console.log(this.state.progress)
 
     if (this.state.progress >= 0 && this.state.progress <= 1) {
 
       this.trigger('scroll', { progress: this.state.progress });
 
       if (!this.state.inView) {
-        this.setInview(true, (this.options.enterClass === null));
+        this.setInview(true, (this.props.enterClass === null));
 
-        if (this.options.init) {
-          this.options.init.call(this);
+        if (this.props.init) {
+          this.props.init.call(this);
         }
 
-        // if (!(this.state.firstRender && this.options.ignoreInitial)) {
         this.trigger(LazyView.ENTER);
-        // }
       }
     } else {
       if (this.state.inView) {
-        this.setInview(false, (this.options.enterClass === null));
+        this.setInview(false, (this.props.enterClass === null));
         if (!(this.state.firstRender)) {
           this.trigger(LazyView.EXIT);
         }
@@ -340,45 +370,12 @@ export default class LazyView extends EventDispatcher {
   cachePosition() {
     this.position = getAbsolutBoundingRect(this.el);
 
-    if (this.children && this.children.length) {
+    if (this.watching) {
       for (let i = 0, l = this.children.length; i < l; i++) {
         let rect = getAbsolutBoundingRect(this.children[i].el);
-        // rect.top -= this.position.top;
-        // rect.bottom -= this.position.top;
         this.children[i].position = rect;
       }
       return;
-    }
-
-    var selectedChildren = null;
-    this.children = [];
-
-    if (this.options.childSelectors && this.options.childSelectors.length) {
-      const query = this.options.childSelectors.join(', ');
-      if (query !== this.lastChildrenQuery) {
-        this.lastChildrenQuery = query;
-        selectedChildren = this.el.querySelectorAll(this.options.childSelectors.join(', '));
-
-      }
-    } else if (!this.options.children && this.options.children.length) {
-      selectedChildren = this.options.children;
-    }
-
-    if (selectedChildren) {
-
-      for (let i = 0, l = selectedChildren.length; i < l; i++) {
-        let rect = getAbsolutBoundingRect(selectedChildren[i]);
-        // rect.top -= this.position.top;
-        // rect.bottom -= this.position.top;
-
-        this.children.push({
-          el: selectedChildren[i],
-          position: rect,
-          state: {
-            inView: false,
-          }
-        });
-      }
     }
   }
 
@@ -419,7 +416,7 @@ export default class LazyView extends EventDispatcher {
     this.onResize = null;
 
     this.position = null;
-    this.options = null;
+    this.props = null;
     this.el = null;
   }
 }
