@@ -2,10 +2,12 @@ import EventDispatcher from 'eventdispatcher';
 import Scroll from 'scrollfeatures';
 import assign from 'object-assign';
 import classNames from 'classnames/dedupe';
+import debounce from 'lodash.debounce';
+import TaskCreator from './task/taskcreator';
 
 const isPlainObject = obj => Object.prototype.toString.call(obj) == '[object Object]';
 const isArray = arr => Object.prototype.toString.call(arr) === '[object Array]';
-const isLazyTaskCreator = obj => obj && obj.hasOwnProperty('creator');
+const isTaskCreator = obj => obj && obj.hasOwnProperty('creator');
 
 const defaults = {
   autoInit: true,
@@ -88,7 +90,7 @@ export default class LazyView extends EventDispatcher {
     if (args.length === 2) {
 
       if (typeof args[1] !== 'undefined') {
-        if (isLazyTaskCreator(args[1])) {
+        if (isTaskCreator(args[1])) {
           tasks.push(args[1]);
         } else if (isArray(args[1])) {
           tasks.concat(args[1]);
@@ -99,7 +101,7 @@ export default class LazyView extends EventDispatcher {
     } else if (args.length === 3) {
 
       if (typeof args[1] !== 'undefined') {
-        if (isLazyTaskCreator(args[1])) {
+        if (isTaskCreator(args[1])) {
           tasks.push(args[1]);
         } else if (isArray(args[1])) {
           tasks = tasks.concat(args[1]);
@@ -108,7 +110,7 @@ export default class LazyView extends EventDispatcher {
         }
       }
       if (typeof args[2] !== 'undefined') {
-        if (isLazyTaskCreator(args[2])) {
+        if (isTaskCreator(args[2])) {
           tasks.push(args[2]);
         } else if (isArray(args[2])) {
           tasks = tasks.concat(args[2]);
@@ -161,10 +163,9 @@ export default class LazyView extends EventDispatcher {
 
     this.onScroll = this.onScroll.bind(this);
     this.onResize = this.update.bind(this);
-    this.onLoadChild = this.onLoadChild.bind(this);
+    this.checkBounds = debounce(this.checkBounds.bind(this), 100);
 
-
-    this.el.addEventListener('load', this.onLoadChild, false);
+    this.el.addEventListener('load', this.checkBounds, false);
 
     var i = -1;
     while (++i < this.tasks.length) {
@@ -178,9 +179,9 @@ export default class LazyView extends EventDispatcher {
 
     if (typeof window !== 'undefined') {
       window.addEventListener('orientationchange', this.onResize, false);
-      window.addEventListener('load', this.onResize, false);
+      window.addEventListener('load', this.onResize,{capture: false, once: true});
       if (document.readyState !== 'complete') {
-        document.addEventListener("DOMContentLoaded", this.onResize, false);
+        document.addEventListener("DOMContentLoaded", this.onResize, {capture: false, once: true});
       }
     }
 
@@ -209,7 +210,7 @@ export default class LazyView extends EventDispatcher {
   }
 
   removeChild(element) {
-    if (!!this.options.children) {
+    if (this.options.children && this.options.children.length) {
       const index = this.options.children.indexOf(element);
       if (index > -1) {
         this.options.children.splice(index, 1);
@@ -220,24 +221,16 @@ export default class LazyView extends EventDispatcher {
   render() {
     if (this.options.enterClass) {
       this.el.className = classNames(this.el.className, {
-        [this.options.enterClass]: this.state.inView });
+        [this.options.enterClass]: this.state.inView
+      });
     }
-    // if (this.options.enterClass || this.options.exitClass) {
-    //   // const directionY = this.scroll.directionY;
-    //   this.el.className = classNames(this.el.className, {
-    //     [this.options.enterClass]: this.state.inView,
-    //     [this.options.exitClass]: !this.state.inView
-    //   });
-    // }
   }
 
 
-  onLoadChild() {
-    setTimeout(()=>{
-      if (this.el && (this.el.clientHeight !== this.position.height)) {
-        this.scroll.trigger('scroll:resize');
-      }
-    },1);
+  checkBounds() {
+    if (this.el && (this.el.clientHeight !== this.position.height)) {
+      this.scroll.trigger('scroll:resize');
+    }
   }
 
   onScroll() {
@@ -347,7 +340,7 @@ export default class LazyView extends EventDispatcher {
   cachePosition() {
     this.position = getAbsolutBoundingRect(this.el);
 
-    if (!!this.children && this.children.length) {
+    if (this.children && this.children.length) {
       for (let i = 0, l = this.children.length; i < l; i++) {
         let rect = getAbsolutBoundingRect(this.children[i].el);
         // rect.top -= this.position.top;
@@ -357,17 +350,17 @@ export default class LazyView extends EventDispatcher {
       return;
     }
 
-    var selectedChildren = [];
+    var selectedChildren = null;
     this.children = [];
 
-    if (!!this.options.childSelectors && this.options.childSelectors.length) {
+    if (this.options.childSelectors && this.options.childSelectors.length) {
       const query = this.options.childSelectors.join(', ');
       if (query !== this.lastChildrenQuery) {
         this.lastChildrenQuery = query;
         selectedChildren = this.el.querySelectorAll(this.options.childSelectors.join(', '));
 
       }
-    } else if (!!this.options.children && this.options.children.length) {
+    } else if (!this.options.children && this.options.children.length) {
       selectedChildren = this.options.children;
     }
 
@@ -419,7 +412,7 @@ export default class LazyView extends EventDispatcher {
     }
 
     if (this.el) {
-      this.el.removeListener('load', this.onLoadChild);
+      this.el.removeListener('load', this.checkBounds);
     }
 
     this.onScroll = null;

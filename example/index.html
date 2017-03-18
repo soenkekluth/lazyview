@@ -13,8 +13,6 @@
     margin: 0 auto;
   }
 
-
-
   .lazyview {
     width: 100%;
     height: 50px;
@@ -22,24 +20,19 @@
     transition: opacity 500ms ease-out, background-color 500ms ease-out;
   }
 
-
   .lazyview-child {
     transition: background-color 500ms ease-out;
-
   }
 
   .lazyview-child.in-view {
     transition-delay: 200ms;
     background-color: blue;
     color: #ffffff !important;
-
-
   }
 
-  .lazyview-child.in-view >.lazyview-child.in-view{
+  .lazyview-child.in-view >.lazyview-child.in-view {
     background-color: red;
   }
-
 
   .lazyview.hugh {
     position: absolute;
@@ -62,15 +55,15 @@
     z-index: 1000;
   }
 
-  img {
+  /*img {
     transition: opacity 1000ms ease-out;
     opacity: 0;
   }
 
-  .in-view img.is-loaded,
-  img.is-loaded.in-view {
+  img.is-loaded,
+  img.in-view {
     opacity: 1;
-  }
+  }*/
 
   .test.in-view {
     color: red;
@@ -79,8 +72,6 @@
   .lazyview-child.in-view {
     color: blue;
   }
-
-
   </style>
 </head>
 
@@ -232,34 +223,31 @@
   <script src="../dist/lazyview.min.js"></script>
   <script src="../dist/lazyview.lazyload.task.min.js"></script>
   <script src="../dist/lazyview.lazyinit.task.min.js"></script>
-
   <script>
-
-
   var onStart = function(lazyView) {
     return new Promise(function(resolve, reject) {
-        setTimeout(function(){
-          console.log('call resolve')
-          resolve(lazyView);
-        }, 1000);
+      setTimeout(function() {
+        console.log('call resolve')
+        resolve(lazyView);
+      }, 1000);
     })
   }
 
 
 
-  var onComplete = function(){
+  var onComplete = function() {
     console.log('onComplete')
     return true;
   }
-    var element = document.querySelectorAll('.lazyview, .lazyitem');
-    var lazyView = new LazyView(element, {
-      threshold: 0,
+  var element = document.querySelectorAll('.lazyview, .lazyitem');
+  var lazyView = new LazyView(element, {
+    threshold: 0,
     // init: init,
     // children: element.querySelectorAll('.lazyview-child'),
     childSelectors: ['.lazyview-child'],
     //offsets: {'50px' :-50, '200px' :-200},
     enterClass: 'in-view'
-   });
+  }, [LazyLoadTask(), LazyInitTask()]);
 
   lazyView.on('enter', function(e) {
     // console.log('on enter enter ############################### >', e)
@@ -276,10 +264,6 @@
     console.log('exit:child ############################### >', e.target.id)
     e.target.classList.remove('in-view');
   })
-
-
-
-
   </script>
 </body>
 

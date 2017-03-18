@@ -1,9 +1,5 @@
-import assign from 'object-assign';
-
-export default class LazyTaskCreator {
-
+export default class TaskCreator {
   constructor(Task, options) {
     this.creator = (lazyView) => new Task(lazyView, options);
   }
-
 }

@@ -3,7 +3,7 @@ import assign from 'object-assign';
 export default class LazyTask {
 
   static defaults = {
-    destroyOnComplete: false,
+    once: false,
     completeClass: null,
     initClass: null,
     onStart: null,
@@ -58,9 +58,7 @@ export default class LazyTask {
   }
 
   onAfterComplete(lazyView) {
-    if (lazyView.el.clientHeight !== lazyView.position.height) {
-      lazyView.scroll.trigger('scroll:resize');
-    }
+    lazyView.checkBounds();
     return Promise.resolve(lazyView);
   }
 

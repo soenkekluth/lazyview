@@ -1,5 +1,5 @@
-import LazyTaskCreator from '../lazytaskcreator';
-import LazyTask from '../lazytask';
+import TaskCreator from '../task/taskcreator';
+import LazyTask from '../task/lazytask';
 
 
 class LazyInitTask extends LazyTask {
@@ -10,5 +10,5 @@ class LazyInitTask extends LazyTask {
 }
 
 module.exports = options => {
-  return new LazyTaskCreator(LazyInitTask, options);
+  return new TaskCreator(LazyInitTask, options);
 };

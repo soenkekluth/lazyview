@@ -1,0 +1,16 @@
+{
+  "presets": [
+    "babel-preset-es2015-tree-shaking"
+  ],
+  "plugins": [
+    [
+      "transform-runtime", {
+        "helpers": true,
+        "polyfill": false,
+        "regenerator": true,
+        "moduleName": "babel-runtime"
+      }
+    ],
+    "add-module-exports"
+  ]
+}

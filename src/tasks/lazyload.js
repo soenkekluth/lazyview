@@ -1,11 +1,11 @@
-import LazyTaskCreator from '../lazytaskcreator';
-import LazyTask from '../lazytask';
+import TaskCreator from '../task/taskcreator';
+import LazyTask from '../task/lazytask';
 
 class LazyLoadTask extends LazyTask {
 
   constructor(lazyView, options, name) {
     options = options || {};
-    options.destroyOnComplete = true;
+    options.once = true;
     super(lazyView, options, 'lazyload');
   }
 
@@ -87,13 +87,9 @@ class LazyLoadTask extends LazyTask {
 
     if (this.loadCount === 0) {
 
-      var lazyView = this.lazyView;
-      setTimeout(() => {
-        this.loadResolver(lazyView);
-        lazyView = null;
-      }, 1)
+      this.loadResolver(this.lazyView);
 
-      if (this.options.destroyOnComplete) {
+      if (this.options.once) {
         this.destroy();
       }
     }
@@ -107,6 +103,9 @@ class LazyLoadTask extends LazyTask {
       this.loadResolver = resolve;
       if(!this.mediaToLoad.length){
         this.loadResolver(this.lazyView);
+        if (this.options.once) {
+          this.destroy();
+        }
         return;
       }
 
@@ -141,12 +140,12 @@ class LazyLoadTask extends LazyTask {
         }
       }
 
-      this.lazyView.removeOffset(this.name)
+      // this.lazyView.removeOffset(this.name)
     });
 
   }
 }
 
 module.exports = options => {
-  return new LazyTaskCreator(LazyLoadTask, options);
+  return new TaskCreator(LazyLoadTask, options);
 };
