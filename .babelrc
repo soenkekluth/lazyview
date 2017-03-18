@@ -2,11 +2,11 @@
   "env": {
     "dist": {
       "presets": [
-        "babel-preset-es2015-tree-shaking"
+       ["es2015", {"loose": true}],
+       "stage-0"
       ],
       "plugins": [
-        ["transform-es2015-modules-commonjs", { "loose": true }],
-        [
+      [
           "transform-runtime", {
             "helpers": true,
             "polyfill": false,
@@ -19,7 +19,7 @@
     },
     "lib": {
       "presets": [
-        "babel-preset-es2015-tree-shaking"
+        "es2015-tree-shaking"
       ],
       "plugins": [
         ["transform-es2015-modules-commonjs", { "loose": true }],
@@ -36,7 +36,7 @@
     },
     "es": {
       "presets": [
-        "babel-preset-es2015-tree-shaking"
+        "es2015-tree-shaking"
       ],
       "plugins": [
         [

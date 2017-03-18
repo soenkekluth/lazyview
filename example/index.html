@@ -220,9 +220,9 @@
     <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Minima explicabo deserunt, praesentium eum delectus ipsam ipsum quis aliquid nulla maxime consequatur sapiente officiis, voluptate pariatur atque quas id repellendus assumenda.</div>
     <div class="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Officia dolorem aliquid praesentium cumque sit vero, ducimus atque et. Atque voluptate, dicta nihil obcaecati quo iusto aliquam nam perferendis nemo illum.</div>
   </div>
-  <script src="../dist/lazyview.min.js"></script>
-  <script src="../dist/lazyview.lazyload.task.min.js"></script>
-  <script src="../dist/lazyview.lazyinit.task.min.js"></script>
+  <script src="lazyview.min.js"></script>
+  <script src="lazyview.lazyload.task.min.js"></script>
+  <script src="lazyview.lazyinit.task.min.js"></script>
   <script>
   var onStart = function(lazyView) {
     return new Promise(function(resolve, reject) {
@@ -233,6 +233,7 @@
     })
   }
 
+  console.log(LazyView);
 
 
   var onComplete = function() {
