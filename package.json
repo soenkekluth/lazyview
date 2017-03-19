@@ -1,6 +1,6 @@
 {
   "name": "lazyview",
-  "version": "1.1.7",
+  "version": "1.1.8",
   "description": "Initialize a View Component related to a dom element when it enters the viewport. Or Lazyload images for example",
   "main": "lib/lazyview.js",
   "module": "es/lazyview.js",

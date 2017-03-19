@@ -285,9 +285,9 @@ export default class LazyView extends EventDispatcher {
     if (this.state.inView && this.watching) {
 
       for (let i = 0, l = this.children.length; i < l; i++) {
-        // if(!this.children[i]){
-        //   continue;
-        // }
+        if(!this.children[i] || !this.children[i].position){
+          continue;
+        }
         if (this.isInView(this.children[i].position)) {
           if (!this.children[i].state.inView) {
             this.children[i].state.inView = true;
@@ -300,7 +300,6 @@ export default class LazyView extends EventDispatcher {
           }
         }
       }
-
     }
   }
 
@@ -374,7 +373,9 @@ export default class LazyView extends EventDispatcher {
       for (let i = 0, l = this.children.length; i < l; i++) {
         if (this.children[i] && this.children[i].el) {
           let rect = getAbsolutBoundingRect(this.children[i].el);
-          this.children[i].position = rect;
+          if(this.children[i]){
+            this.children[i].position = rect;
+          }
         }
       }
     }
