@@ -2,7 +2,6 @@ import TaskCreator from '../task/taskcreator';
 import LazyTask from '../task/lazytask';
 import assign from 'object-assign';
 
-
 class LazyInit extends LazyTask {
 
   static defaultProps = {

@@ -1,14 +1,13 @@
 import EventDispatcher from 'eventdispatcher';
 import Scroll from 'scrollfeatures';
 import assign from 'object-assign';
-import classNames from 'classnames/dedupe';
+import { addClass, removeClass } from 'dom-helpers/class';
 import debounce from 'lodash.debounce';
 import TaskCreator from './task/taskcreator';
 
 const isPlainObject = obj => Object.prototype.toString.call(obj) == '[object Object]';
 const isArray = arr => Object.prototype.toString.call(arr) === '[object Array]';
 const isTaskCreator = obj => obj && obj.hasOwnProperty('creator');
-
 
 const getAbsolutBoundingRect = (el, fixedHeight) => {
   var rect = el.getBoundingClientRect();
@@ -23,7 +22,6 @@ const getAbsolutBoundingRect = (el, fixedHeight) => {
     right: rect.right
   };
 };
-
 
 const nullPosition = {
   top: 0,
@@ -42,7 +40,6 @@ const getPositionStyle = (el) => {
 
 export default class LazyView extends EventDispatcher {
 
-
   static defaultProps = {
     autoInit: true,
     ignoreInitial: false,
@@ -51,10 +48,8 @@ export default class LazyView extends EventDispatcher {
     init: null,
     threshold: 0,
     children: false,
-    offsets: null // {myoffset:100}
+    offsets: null
   };
-
-
 
   static ENTER = 'enter';
   static EXIT = 'exit';
@@ -123,7 +118,6 @@ export default class LazyView extends EventDispatcher {
       }
     }
 
-
     super({ target: el });
 
     this.el = el;
@@ -155,7 +149,6 @@ export default class LazyView extends EventDispatcher {
       return collection;
     }
   }
-
 
   init() {
     if (this.state.initialized) {
@@ -194,7 +187,6 @@ export default class LazyView extends EventDispatcher {
     this.update();
   }
 
-
   addOffset(name, value) {
     this.props.offsets = this.props.offsets || {};
     this.props.offsets[name] = value;
@@ -221,9 +213,15 @@ export default class LazyView extends EventDispatcher {
     } else if (isArray(this.props.children)) {
       for (let i = 0, l = this.props.children.length; i < l; i++) {
         const entry = this.props.children[i];
+        if (!entry) {
+          continue;
+        }
         if (typeof entry === 'string') {
-          children = children.concat(Array.prototype.slice.call(this.el.querySelectorAll(entry)));
-        } else if (entry.tagName) {
+          let els = Array.prototype.slice.call(this.el.querySelectorAll(entry));
+          if (els && els.length) {
+            children = children.concat(els);
+          }
+        } else if (typeof entry.nodeType === 'undefined') {
           children.push(entry);
         }
       }
@@ -233,7 +231,10 @@ export default class LazyView extends EventDispatcher {
   }
 
   watchChild(domNode) {
-
+    if (!domNode || typeof domNode.nodeType === 'undefined') {
+      console.warn('domNode is invalid');
+      return;
+    }
     const hasChild = this.children.find(child => child.el === domNode);
     if (!hasChild) {
       let rect = getAbsolutBoundingRect(domNode);
@@ -250,7 +251,12 @@ export default class LazyView extends EventDispatcher {
   }
 
   unwatchChild(domNode) {
-    this.children = this.children.filter(child => (!child.el || child.el !== domNode));
+    if (!domNode || typeof domNode.nodeType === 'undefined') {
+      console.warn('domNode is invalid');
+      this.invalidateChildren();
+      return;
+    }
+    this.children = this.children.filter(child => (!!child.el && child.el !== domNode));
     if (!this.children.length) {
       this.watching = false;
     }
@@ -258,12 +264,13 @@ export default class LazyView extends EventDispatcher {
 
   render() {
     if (this.props.enterClass) {
-      this.el.className = classNames(this.el.className, {
-        [this.props.enterClass]: this.state.inView
-      });
+      if (this.state.inView) {
+        addClass(this.el, this.props.enterClass);
+      } else {
+        removeClass(this.el, this.props.enterClass);
+      }
     }
   }
-
 
   checkBounds() {
     if (this.el && (this.el.clientHeight !== this.position.height)) {
@@ -278,6 +285,9 @@ export default class LazyView extends EventDispatcher {
     if (this.state.inView && this.watching) {
 
       for (let i = 0, l = this.children.length; i < l; i++) {
+        // if(!this.children[i]){
+        //   continue;
+        // }
         if (this.isInView(this.children[i].position)) {
           if (!this.children[i].state.inView) {
             this.children[i].state.inView = true;
@@ -291,25 +301,6 @@ export default class LazyView extends EventDispatcher {
         }
       }
 
-      /*if (false || this.offsetKeys) {
-
-        for (let i = 0, l = this.offsetKeys.length; i < l; i++) {
-          var key = this.offsetKeys[i];
-          var value = this.props.offsets[key];
-
-          if (this.isInView(value)) {
-            if (!this.offsetStates[key]) {
-              this.offsetStates[key] = true;
-              this.trigger('enter:' + key);
-            }
-          } else {
-            if (this.offsetStates[key]) {
-              this.offsetStates[key] = false;
-              this.trigger('exit:' + key);
-            }
-          }
-        }
-      }*/
     }
   }
 
@@ -367,15 +358,25 @@ export default class LazyView extends EventDispatcher {
     this.state.firstRender = false;
   }
 
+  invalidateChildren() {
+    if (this.children.length) {
+      this.children = this.children.filter(child => (child && child.el));
+      this.watching = this.children.length > 0;
+    } else {
+      this.watching = false;
+    }
+  }
+
   cachePosition() {
     this.position = getAbsolutBoundingRect(this.el);
-
+    // this.invalidateChildren();
     if (this.watching) {
       for (let i = 0, l = this.children.length; i < l; i++) {
-        let rect = getAbsolutBoundingRect(this.children[i].el);
-        this.children[i].position = rect;
+        if (this.children[i] && this.children[i].el) {
+          let rect = getAbsolutBoundingRect(this.children[i].el);
+          this.children[i].position = rect;
+        }
       }
-      return;
     }
   }
 

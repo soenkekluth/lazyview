@@ -1,6 +1,6 @@
 {
   "name": "lazyview",
-  "version": "1.1.1",
+  "version": "1.1.7",
   "description": "Initialize a View Component related to a dom element when it enters the viewport. Or Lazyload images for example",
   "main": "lib/lazyview.js",
   "module": "es/lazyview.js",
@@ -60,8 +60,9 @@
   },
   "dependencies": {
     "babel-runtime": ">=6.20.0",
-    "classnames": ">=2.2.5",
+    "dom-helpers": "3.2.1",
     "eventdispatcher": ">=2.6.0",
+    "lazyload-promise": "1.0.0",
     "lodash.debounce": ">=4.0.8",
     "object-assign": ">=4.1.1",
     "scrollfeatures": ">=1.5.2"

@@ -5,8 +5,8 @@ export default class LazyTask {
   static defaultProps = {
     name: 'lazytask',
     once: false,
+    startClass: null,
     completeClass: null,
-    initClass: null,
     onStart: null,
     onStop: null,
     onComplete: null,
@@ -23,7 +23,6 @@ export default class LazyTask {
     this.init();
   }
 
-
   destroy() {
     this.lazyView.removeOffset(this.name);
     this.props = null;
@@ -32,41 +31,31 @@ export default class LazyTask {
     this.lazyView = null;
   }
 
-
   init() {
     this.lazyView.one('enter', this.onEnter);
     this.lazyView.one('exit', this.onExit);
-    if (this.props.threshold) {
-      this.lazyView.addOffset(this.name, this.props.threshold);
-      this.lazyView.one('enter:' + this.name, this.onEnter);
-      this.lazyView.one('exit:' + this.name, this.onExit);
-    } else {
-      this.lazyView.one('enter', this.onEnter);
-      this.lazyView.one('exit', this.onExit);
-    }
   }
 
   onStop(arg) {
     return Promise.resolve(arg);
   }
 
-  onStart(lazyView) {
-    return Promise.resolve(lazyView);
+  onStart(arg) {
+    return Promise.resolve(this.lazyView);
   }
 
-  onComplete(lazyView) {
-    return Promise.resolve(lazyView);
+  onComplete(arg) {
+    return Promise.resolve(this.lazyView);
   }
 
-  onAfterComplete(lazyView) {
-    lazyView.checkBounds();
+  onAfterComplete(arg) {
+    this.lazyView.checkBounds();
     return Promise.resolve(lazyView);
   }
 
   onEnter() {
-    var result =
-      this.onStart(this.lazyView)
-      .then(arg => {
+    var result = this.onStart(this.lazyView)
+      .then((arg) => {
         if (this.props && this.props.onStart) {
           var res = this.props.onStart.call(this, this.lazyView);
           if (res.then) {
@@ -88,7 +77,6 @@ export default class LazyTask {
       })
     return result;
   }
-
 
   onExit() {
     var lazyView = this.lazyView;
