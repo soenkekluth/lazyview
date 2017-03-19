@@ -50,7 +50,7 @@ export default class LazyTask {
 
   onAfterComplete(arg) {
     this.lazyView.checkBounds();
-    return Promise.resolve(lazyView);
+    return Promise.resolve(this.lazyView);
   }
 
   onEnter() {
