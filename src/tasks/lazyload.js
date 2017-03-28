@@ -30,7 +30,7 @@ class LazyLoad extends LazyTask {
   }
 
   onStart() {
-    return lazyload(this.lazyView.el, { onLoad: this.onLoad });
+    return lazyload(this.lazyView.node, { onLoad: this.onLoad });
   }
 }
 

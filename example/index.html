@@ -253,15 +253,15 @@
     console.log('onComplete')
     return true;
   }
-  var element = document.querySelectorAll('.lazyview, .lazyitem');
-  var lazyView = new LazyView(element, {
+  var domNodes = document.querySelectorAll('.lazyview, .lazyitem');
+  var lazyView = new LazyView({node: domNodes, props: {
     threshold: 0,
     // init: init,
     // children: element.querySelectorAll('.lazyview-child'),
     children: ['.lazyview-child'],
     //offsets: {'50px' :-50, '200px' :-200},
     enterClass: 'in-view'
-  }, [LazyLoadTask(), LazyInitTask()]);
+  }, tasks: [LazyLoadTask(), LazyInitTask()]});
 
   lazyView.on('enter', function(e) {
     // console.log('on enter enter ############################### >', e)
