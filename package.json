@@ -1,6 +1,6 @@
 {
   "name": "lazyview",
-  "version": "1.1.9",
+  "version": "1.2.0",
   "description": "Initialize a View Component related to a dom element when it enters the viewport. Or Lazyload images for example",
   "main": "lib/lazyview.js",
   "module": "es/lazyview.js",
@@ -12,8 +12,8 @@
     "build-debug": "cross-env NODE_ENV=production webpack -d",
     "dist": "cross-env BABEL_ENV=dist webpack -p && cp dist/*.js example/",
     "start": "run-p watch-js devserver",
-    "build:lib": "cross-env BABEL_ENV=lib babel src -d lib",
-    "build:es": "cross-env BABEL_ENV=es babel src -d es",
+    "build:lib": "cross-env NODE_ENV=production BABEL_ENV=lib babel src -d lib",
+    "build:es": "cross-env NODE_ENV=production BABEL_ENV=es babel src -d es",
     "devserver": "webpack-dev-server --config ./webpack.config.js --inline --open"
   },
   "repository": {
