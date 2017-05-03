@@ -1,6 +1,6 @@
 {
   "name": "lazyview",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "description": "Initialize a View Component related to a dom element when it enters the viewport. Or Lazyload images for example",
   "main": "lib/lazyview.js",
   "module": "es/lazyview.js",
@@ -39,32 +39,32 @@
   },
   "homepage": "https://github.com/soenkekluth/lazyview#readme",
   "devDependencies": {
-    "babel-cli": "^6.24.0",
-    "babel-core": "^6.24.0",
-    "babel-loader": "^6.4.1",
+    "babel-cli": "^6.24.1",
+    "babel-core": "^6.24.1",
+    "babel-loader": "^7.0.0",
     "babel-plugin-add-module-exports": "^0.2.1",
-    "babel-plugin-transform-class-properties": "^6.23.0",
+    "babel-plugin-transform-class-properties": "^6.24.1",
     "babel-plugin-transform-es2015-modules-commonjs": "6.24.1",
     "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-env": "1.4.0",
     "babel-preset-es2015": "6.24.1",
     "babel-preset-es2015-tree-shaking": "^1.0.1",
     "babel-preset-stage-0": "6.24.1",
-    "cross-env": "4.0.0",
-    "mocha": "3.3.0",
+    "cross-env": "^4.0.0",
+    "mocha": "^3.3.0",
     "npm-run-all": "^4.0.2",
     "run-proxy": "^1.0.1",
     "should": "^11.2.1",
-    "webpack": "2.4.1",
-    "webpack-dev-server": "2.4.5"
+    "webpack": "^2.4.1",
+    "webpack-dev-server": "^2.4.5"
   },
   "dependencies": {
-    "babel-runtime": ">=6.20.0",
-    "dom-helpers": "3.2.1",
-    "eventdispatcher": ">=2.6.0",
+    "babel-runtime": "^6.20.0",
+    "dom-helpers": "^3.2.1",
+    "eventdispatcher": "^2.6.0",
     "lazyload-promise": "1.1.0",
-    "lodash.debounce": ">=4.0.8",
-    "object-assign": ">=4.1.1",
-    "scrollfeatures": "1.6.0"
+    "lodash.debounce": "^4.0.8",
+    "object-assign": "^4.1.1",
+    "scrollfeatures": "^1.6.1"
   }
 }
