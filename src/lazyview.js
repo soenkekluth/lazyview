@@ -456,7 +456,11 @@ export default class LazyView extends EventDispatcher {
     }
 
     if (this.node) {
-      this.node.removeListener('load', this.checkBounds);
+      try{
+        this.node.removeEventListener('load', this.checkBounds);
+      }catch(e){
+        console.error(e);
+      }
     }
 
     this.onScroll = null;
