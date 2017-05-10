@@ -2569,13 +2569,6 @@ negotiator@0.6.1:
   version "0.6.1"
   resolved "https://registry.yarnpkg.com/negotiator/-/negotiator-0.6.1.tgz#2b327184e8992101177b28563fb5e7102acd0ca9"
 
-nextframe@^1.2.1:
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/nextframe/-/nextframe-1.2.1.tgz#532e35191f05791b58b98243f36e756546f218b1"
-  dependencies:
-    prs "3.0.2"
-    raf "https://github.com/soenkekluth/raf"
-
 node-libs-browser@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/node-libs-browser/-/node-libs-browser-2.0.0.tgz#a3a59ec97024985b46e958379646f96c4b616646"
@@ -2882,10 +2875,6 @@ prr@~0.0.0:
   version "0.0.0"
   resolved "https://registry.yarnpkg.com/prr/-/prr-0.0.0.tgz#1a84b85908325501411853d0081ee3fa86e2926a"
 
-prs@3.0.2:
-  version "3.0.2"
-  resolved "https://registry.yarnpkg.com/prs/-/prs-3.0.2.tgz#87df90e03a5b12fa58d293d82a2cd47a1c944076"
-
 ps-tree@^1.0.1:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/ps-tree/-/ps-tree-1.1.0.tgz#b421b24140d6203f1ed3c76996b4427b08e8c014"
@@ -2934,9 +2923,9 @@ querystringify@0.0.x:
   version "0.0.4"
   resolved "https://registry.yarnpkg.com/querystringify/-/querystringify-0.0.4.tgz#0cf7f84f9463ff0ae51c4c4b142d95be37724d9c"
 
-"raf@https://github.com/soenkekluth/raf":
-  version "3.3.0"
-  resolved "https://github.com/soenkekluth/raf#c5aaacf3a9db79aac602d06f222cabbbfb3f5f7d"
+raf@^3.3.2:
+  version "3.3.2"
+  resolved "https://registry.yarnpkg.com/raf/-/raf-3.3.2.tgz#0c13be0b5b49b46f76d6669248d527cf2b02fe27"
   dependencies:
     performance-now "^2.1.0"
 
@@ -3143,12 +3132,12 @@ run-proxy@^1.0.1:
     command-exists "^1.0.2"
     minimist "^1.2.0"
 
-scrollfeatures@^1.6.1:
-  version "1.6.1"
-  resolved "https://registry.yarnpkg.com/scrollfeatures/-/scrollfeatures-1.6.1.tgz#fb2a54a93b2a9c276f89fa552c9a0948e9fbb0dd"
+scrollfeatures@^1.8.0:
+  version "1.8.0"
+  resolved "https://registry.yarnpkg.com/scrollfeatures/-/scrollfeatures-1.8.0.tgz#f016a157168c69cca70093ff6b5c2558120b835b"
   dependencies:
     eventdispatcher "^2.6.0"
-    nextframe "^1.2.1"
+    raf "^3.3.2"
 
 select-hose@^2.0.0:
   version "2.0.0"
@@ -3683,9 +3672,9 @@ webpack-sources@^0.2.3:
     source-list-map "^1.1.1"
     source-map "~0.5.3"
 
-webpack@^2.4.1:
-  version "2.4.1"
-  resolved "https://registry.yarnpkg.com/webpack/-/webpack-2.4.1.tgz#15a91dbe34966d8a4b99c7d656efd92a2e5a6f6a"
+webpack@^2.5.1:
+  version "2.5.1"
+  resolved "https://registry.yarnpkg.com/webpack/-/webpack-2.5.1.tgz#61742f0cf8af555b87460a9cd8bba2f1e3ee2fce"
   dependencies:
     acorn "^5.0.0"
     acorn-dynamic-import "^2.0.0"
