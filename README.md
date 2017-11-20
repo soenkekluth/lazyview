@@ -1,5 +1,7 @@
 # lazyview
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/soenkekluth/lazyview.svg)](https://greenkeeper.io/)
+
 check if a dom component is inside the viewport and call a function and or add a class
 
 
